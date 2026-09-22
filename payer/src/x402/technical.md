@@ -1,0 +1,152 @@
+# x402 — technical design
+
+Why the module is shaped the way it is. The protocol narrative is
+[`docs/x402-integration.md`](../../../docs/x402-integration.md); the symbol surface is
+[`docs/x402-api.md`](../../../docs/x402-api.md); this is the reasoning underneath both.
+
+## The goal it serves
+
+> **A participant — human or agent — can pay for an HTTP resource from any wallet, and
+> keep proof they did.**
+
+Every decision below is downstream of that sentence. *Any wallet* forced the port layer.
+*Keep proof* forced the receipt ledger. *Agent* forced discovery to be free and quoting to
+need no key.
+
+## Shape
+
+```
+        createX402Client()                    ← the facade most callers use
+                 │
+    ┌────────────┼────────────┐
+    │            │            │
+ client.ts    quote.ts    receipts.ts         ← the flow, priced, recorded
+    │
+ rails.ts ──── rails/avm.ts ── rails/evm.ts   ← one rail per CAIP-2 namespace
+    │
+ protocol.ts   networks.ts                    ← the wire, and what a network is
+    │
+ host.ts                                      ← the three ports
+    │
+ adapters/parsec.ts   adapters/wallets.ts     ← implementations, per host
+```
+
+Dependencies point downward only. `protocol.ts` knows nothing of rails; `rails.ts` knows
+nothing of the client; nothing below `host.ts` knows which application it is inside.
+
+## Five decisions, and what each one refused
+
+### 1. The signer is `algosdk.TransactionSigner`, not an interface of our own
+
+An `AvmSigner` is `{ address, sign }` where `sign` is exactly algosdk's own type. This is
+the single most load-bearing choice in the module: use-wallet, AlgoKit Utils, Pera, Defly
+and Lute all already produce one, so integrating them is a line, not an adapter.
+
+*Refused:* a bespoke `signGroup(txns): Promise<Blob[]>`. It would have read more cleanly
+in isolation and made every real integration a translation layer. An interface nobody else
+speaks is a cost paid by everyone downstream.
+
+### 2. Rails register; nothing branches on a chain name
+
+`railFor(network)` resolves a rail by CAIP-2 namespace. `selectRequirement()` asks the
+registry which of a server's offers are payable; `unpayableNetworks()` names the rest.
+
+*Refused:* `if (network.startsWith('algorand:'))`. The previous module did exactly that,
+and the result was a signer hardcoded to Algorand with every EVM and Solana payee
+unreachable behind it. The registry makes adding a chain one call and makes *failing to
+support one* a reported fact rather than silence.
+
+### 3. Amounts are `bigint` end to end
+
+`amount` is a decimal string on the wire, a `bigint` in memory, and is formatted exactly
+once — for a label. `9007199254740993` survives the round trip; through `Number` it would
+not.
+
+*Refused:* parsing to a number at the edge "because prices are small". They are small
+until a server quotes in wei, and the failure is silent: a payment for the wrong amount
+that the facilitator rejects for reasons that look unrelated.
+
+### 4. Verification and settlement are the resource server's calls, not ours
+
+The client builds and signs. The *server* asks a facilitator to verify and settle. This
+module exposes `verifyPayment` and `settlePayment` for operating a server or running a dry
+run, and the payment flow calls neither.
+
+*Refused:* settling our own payment and telling the server it succeeded. A settlement
+asserted by the party trying to be convinced is not evidence, and a protocol that accepted
+it would not need signatures.
+
+### 5. A receipt is written on settlement, not on success
+
+`submitPayment` records the moment `PAYMENT-RESPONSE` decodes, whether or not the resource
+then delivered. A delivered-false receipt carries the transaction id and the error.
+
+*Refused:* writing on HTTP 200. *The payment settled* and *the resource failed* are
+different facts, and collapsing them is precisely the defect this module was rewritten to
+fix — the previous flow declared `txId` and never assigned it, so a successful payment left
+no evidence of itself.
+
+## The two schemes
+
+Both are `exact`. They differ in what "a signed payment" is.
+
+| | Algorand | EVM |
+|---|---|---|
+| artefact | an atomic group | an EIP-712 signature |
+| sponsor | `pay` at index 0, unsigned, carrying the group's whole fee | the facilitator, implicitly, by broadcasting |
+| ours | `axfer` at index 1, signed | the authorization |
+| replay guard | the group's validity window | a single-use 32-byte nonce the token marks spent |
+| what the facilitator cannot do | redirect or alter the transfer | redirect or alter the transfer |
+
+The Algorand sponsor transaction travels **unsigned** and this is not an oversight: signing
+it is the facilitator's job, and a client able to sign it would hold an authority it has no
+business holding.
+
+On EVM, preflight deliberately never checks for gas. The point of EIP-3009 is that the
+facilitator pays it; an account holding zero ETH can still make the payment, and a gas
+check would refuse a payment that would have worked.
+
+## Where signing actually happens
+
+```
+TypeScript builds the transaction
+        │
+        ├─ Algorand: txn.bytesToSign()  ─→ chain_algo_sign_transaction   ─→ signature
+        │                                   (Rust holds the seed)
+        └─ EVM:      named fields       ─→ chain_evm_sign_transfer_authorization
+                                            (Rust builds the EIP-712 digest itself)
+```
+
+There is deliberately **no `sign_hash` command**. A door that signs any 32 bytes handed to
+it is a blank cheque: the renderer would decide what the participant's key attests to, and
+Rust would have no way to tell a payment from a transaction from a delegation. Each door
+signs one named thing.
+
+In another wallet the same seam is whatever `sign` that wallet provides. The rail cannot
+tell the difference, which is the test `portability.test.ts` exists to keep true.
+
+## Invariants
+
+These hold across the module; breaking one is a bug even if tests pass.
+
+1. **No float touches a value path.** Display only, once, at the end.
+2. **A catalogued price is a memory; a live 402 is a quote.** Only the second is ever paid
+   against.
+3. **Discovery is free.** An agent that must pay to learn a price cannot reason about value.
+4. **Silence is not consent.** Without `approve`, a payment is refused unless it falls under
+   an explicitly configured cap.
+5. **A rail signs only what its payer owns.** Anything else in the group travels unsigned.
+6. **The terms paid are the terms quoted.** A proof that no longer covers its quote is
+   dropped, not submitted (`proofStillCovers`).
+
+## Known limits
+
+- **`svm` and `arweave` are empty rail slots.** A Solana requirement is reported unpayable
+  by name. Implementing it means SPL `transferChecked`, ATA derivation and v0 message
+  serialisation — see [`todo.md`](./todo.md).
+- **EVM implements `eip3009` only.** `permit2` needs a prior on-chain approval and
+  `erc-7710` a smart account; both are refused rather than half-signed.
+- **`extra.decimals` is trusted.** A server misreporting it misprices its own resource;
+  the atomic amount signed is still exactly what was quoted.
+- **Receipts are per-device.** They are a record for the participant, not a ledger of
+  record. The chain is that.
