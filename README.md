@@ -127,6 +127,11 @@ not yet moved real USDC on mainnet.** [`payer/src/x402/todo.md`](payer/src/x402/
 carries the goal, the plan, and what is honestly still open — including that, and the
 Solana rail, which is an empty slot rather than a quiet omission.
 
+## Running this as a challenge entry
+
+[HANDOFF.md](HANDOFF.md) is the operator's page: what is done, the two things that are
+not, and the exact commands for each.
+
 ## Documentation
 
 | | |
@@ -136,6 +141,7 @@ Solana rail, which is an empty slot rather than a quiet omission.
 | [usage.md](usage.md) | recipes for buying, selling and discovering |
 | [payer/src/x402/README.md](payer/src/x402/README.md) | the payer module's own entry point |
 | [docs/x402-api.md](docs/x402-api.md) | every export, every error, troubleshooting |
+| [HANDOFF.md](HANDOFF.md) | what is left, and who has to do it |
 
 ## Licence
 
