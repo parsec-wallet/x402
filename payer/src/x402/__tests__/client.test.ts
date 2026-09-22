@@ -214,9 +214,7 @@ describe('when things go wrong', () => {
 // decided by the offer the server made, not by whichever address the caller had first.
 
 const { resolvePayer } = await import('../client');
-const { payersFromAccount } = await import('../adapters/parsec');
 const { BASE_MAINNET, ALGORAND_MAINNET } = await import('../networks');
-
 describe('resolving the payer', () => {
   const payers = { avm: PAYER, evm: '0x857b06519E91e3A54538791bDbb0E22373e36b66' };
 
@@ -236,11 +234,4 @@ describe('resolving the payer', () => {
     expect(() => resolvePayer(BASE_MAINNET, { payers: { avm: PAYER } })).toThrow(/No EVM address/);
   });
 
-  it('reads one address per chain off a wallet account', () => {
-    const account = {
-      address: PAYER,
-      chains: { algorand: PAYER, ethereum: '0xabc', solana: 'So1ana', bitcoin: 'bc1q' },
-    } as never;
-    expect(payersFromAccount(account)).toEqual({ avm: PAYER, evm: '0xabc', svm: 'So1ana' });
-  });
 });

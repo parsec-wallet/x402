@@ -232,13 +232,10 @@ describe('the EVM adapter', () => {
 // the application again.
 
 describe('the core imports nothing from the application', () => {
-  // Files that are the integration layer, and so are coupled on purpose.
-  const ALLOWED_FILES = new Set([
-    'adapters/parsec.ts', // Parsec's implementations of the ports
-    'module.ts',          // registers routes and a dashboard tile in Parsec's UI
-    'choices.ts',         // declares this module's privilege/reach to Parsec's UI
-    'bridge.ts',          // legacy vault signer, kept for the AORC minters, not the payment path
-  ]);
+  // In this repository there is no integration layer: the host's implementations live
+  // in the host. The allowlist is empty on purpose, and that is the strongest form of
+  // the claim — nothing here is coupled to anything.
+  const ALLOWED_FILES = new Set<string>([]);
 
   // The one shared dependency the core keeps: exact fixed-point arithmetic. It is pure,
   // has no dependencies of its own, and is what stops a float reaching a signed amount.
@@ -251,7 +248,7 @@ describe('the core imports nothing from the application', () => {
 
     const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
     const walk = (dir: string): string[] =>
-      readdirSync(dir).flatMap((entry) => {
+      readdirSync(dir).flatMap((entry: string) => {
         const full = join(dir, entry);
         if (statSync(full).isDirectory()) return entry === '__tests__' ? [] : walk(full);
         return entry.endsWith('.ts') ? [full] : [];

@@ -131,6 +131,16 @@ export const DEFAULT_ALGOD: Record<string, string> = {
 export interface X402Host {
   /** Per-device state. Defaults to `localStorage`, then to memory. */
   storage: X402Storage;
+  /**
+   * The USD price of an asset symbol, for display beside a quote.
+   *
+   * A port because there is no right answer: a wallet has a price feed, an agent may
+   * have none, and a module that reached for one would be choosing a vendor on the
+   * host's behalf. Returning `null` — the default — means a quote is shown in the asset
+   * it is denominated in, which is the honest presentation anyway. USD-pegged assets
+   * never reach this; their price is arithmetic, not a reading.
+   */
+  usdRate(symbol: string): Promise<number | null>;
   /** An algod client for a network. Defaults to a public node with no token. */
   algod(network: string): algosdk.Algodv2;
   /** An EVM JSON-RPC endpoint, for the token balance read before signing. */
@@ -171,6 +181,16 @@ export async function hostAlgod(network: string): Promise<algosdk.Algodv2> {
   if (!url) throw new Error(`no algod endpoint for ${caip2}; pass one via configureX402Host({ algod })`);
   const { default: algosdkModule } = await import('algosdk');
   return new algosdkModule.Algodv2('', url, '');
+}
+
+/** The USD price of an asset symbol, or null when the host supplies no feed. */
+export async function hostUsdRate(symbol: string): Promise<number | null> {
+  if (!configured.usdRate) return null;
+  try {
+    return await configured.usdRate(symbol);
+  } catch {
+    return null; // a price feed that fails must not fail a payment
+  }
 }
 
 /** A JSON-RPC endpoint for an EVM network. */

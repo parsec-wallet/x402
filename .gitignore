@@ -1,7 +1,11 @@
 node_modules
 dist
 target
+__pycache__
+*.egg-info
+.pytest_cache
 .env
 .env.*
 !.env.example
 *.enc
+package-lock.json

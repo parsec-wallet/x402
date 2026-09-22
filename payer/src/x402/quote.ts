@@ -13,11 +13,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ALGO_DECIMALS, USD_DECIMALS, formatDecimal, mulDiv, parseDecimal, rescale } from '../money';
+import { hostUsdRate } from './host';
 import { describeAsset, describeNetwork } from './networks';
 import type { PaymentRequirements } from './protocol';
-import { PriceOracle } from './oracle';
-
-const oracle = new PriceOracle();
 
 /** Assets that are one-for-one with USD, so their USD value needs no oracle. */
 const USD_PEGGED = new Set(['USDC', 'USDT', 'PYUSD', 'EURC']);
@@ -67,15 +65,14 @@ export async function quote(requirement: PaymentRequirements): Promise<X402Quote
   if (USD_PEGGED.has(symbol.toUpperCase())) {
     usdMicro = rescale(amountAtomic, decimals, USD_DECIMALS, 'ceil');
     usdSource = 'pegged';
-  } else if (symbol.toUpperCase() === 'ALGO') {
-    try {
-      const algoUsd = await oracle.getAlgoUsd();
-      const rate = parseDecimal(algoUsd.toFixed(USD_DECIMALS), USD_DECIMALS);
+  } else {
+    // Anything not pegged needs a reading, and only the host has one.
+    const reading = await hostUsdRate(symbol);
+    if (reading !== null && reading > 0) {
+      const rate = parseDecimal(reading.toFixed(USD_DECIMALS), USD_DECIMALS);
       // usd = amount × rate, carried from ALGO's scale to USD's.
       usdMicro = mulDiv(rescale(amountAtomic, decimals, ALGO_DECIMALS, 'ceil'), rate, 10n ** BigInt(ALGO_DECIMALS), 'ceil');
       usdSource = 'oracle';
-    } catch {
-      /* no rate — the quote stays denominated in the asset */
     }
   }
 

@@ -126,6 +126,7 @@ def test_avm_single_txn_fallback_without_fee_payer():
 
 
 # ── Arweave ANS-104 signer ───────────────────────────────────────────────────
+@pytest.mark.skip(reason='needs mindX\'s Arweave data-item signer, which is not part of this repository')
 def test_arweave_dataitem_sign_offline():
     pytest.importorskip("cryptography")
     import tools.arweave_turbo as at

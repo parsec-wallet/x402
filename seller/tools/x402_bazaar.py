@@ -51,9 +51,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 import httpx
 
 from mindx_backend_service import x402_protocol as xp
-from utils.logging_config import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 DEFAULT_FACILITATOR = "https://facilitator.goplausible.xyz"
 DEFAULT_TIMEOUT = 20.0

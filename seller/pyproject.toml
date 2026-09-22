@@ -1,0 +1,14 @@
+[project]
+name = "x402-seller"
+version = "0.1.0"
+description = "x402 on Algorand — the endpoint side: price a route, answer 402, verify and settle"
+requires-python = ">=3.10"
+dependencies = ["httpx>=0.27"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "fastapi>=0.110", "starlette>=0.36"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
