@@ -41,10 +41,11 @@ await x402.discover({ maxAmount: 10_000n });           // the Bazaar catalogue
 | protocol | x402 **v2** (`PAYMENT-*` headers), reads **v1** (`X-PAYMENT` + body `accepts`) |
 | Algorand | scheme `exact` — facilitator-sponsored atomic group, USDC ASA or native ALGO |
 | EVM | scheme `exact` — EIP-3009 `transferWithAuthorization` |
+| Solana | scheme `exact` — a partially-signed transaction the facilitator completes |
 | discovery | Bazaar (`/discovery/*`) and the `bazaar` extension on a live challenge |
 | receipts | every settlement, with the transaction id that proves it |
 
-Solana and Arweave are registrable rail slots with nothing behind them.
+Arweave is the last registrable rail slot with nothing behind it — a fulfilment leg with no settlement chain.
 
 ## Files
 

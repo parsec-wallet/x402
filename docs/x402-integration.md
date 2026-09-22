@@ -6,6 +6,8 @@
 > through **Rust**, and writes a **receipt carrying the settled transaction id**. Solana
 > and Arweave are registrable slots with nothing behind them yet.
 >
+> **Solana as of 2026-09-21.** Three rails: Algorand, EVM and Solana, all `exact`.
+>
 > **Portable as of 2026-09-19.** The module depends on the application through three
 > small ports (`host.ts`) rather than by importing it. Parsec supplies signing backed by
 > Rust; any wallet with an `algosdk.TransactionSigner` — use-wallet, AlgoKit, Pera, Defly,
@@ -230,6 +232,63 @@ message this path can produce. The typehashes are pinned against their own defin
 and the digest and signature are pinned against `eth_account` — an independent
 implementation, not our own arithmetic replayed.
 
+## The `exact` scheme on Solana
+
+The most elegant of the three, and the least obvious. The requirement:
+
+```json
+{
+  "scheme": "exact",
+  "network": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  "amount": "1000",
+  "asset": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "payTo": "2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4",
+  "maxTimeoutSeconds": 60,
+  "extra": { "feePayer": "<facilitator>", "memo": "pi_3abc123def456" }
+}
+```
+
+`asset` is the **token mint**. The payload is one field:
+
+```json
+{ "transaction": "<base64 of the partially-signed wire transaction>" }
+```
+
+The payer compiles a transaction whose **fee payer is the facilitator**, signs only their
+own slot, and sends something that *cannot execute*. A transaction missing a required
+signature is inert; the facilitator completes it or it never happens. And it cannot change
+a byte, because doing so invalidates the signature already on it.
+
+`extra.memo`, when set, **must** be used verbatim rather than a nonce of ours — it is how
+a seller reconciles a payment against an invoice.
+
+### The part worth checking twice
+
+A transfer moves tokens between *associated token accounts*, each derived as
+`PDA([owner, tokenProgram, mint], associatedTokenProgram)`. This is the one place in the
+rail where being wrong is silent and expensive: a mis-derived address is a valid-looking
+account nobody controls, and the payment succeeds into it.
+
+So it is pinned against two addresses **read back from mainnet** — derived by this code,
+then confirmed by `getAccountInfo` to exist and report exactly the owner and mint they
+were derived from. That is ground truth from the chain, not our own arithmetic replayed.
+
+### The recipient must be able to receive
+
+Solana's analogue of the Algorand opt-in, and it fails the same silent way: a transfer to
+an account that does not exist is rejected, and it does not read as a funds problem.
+Unlike the opt-in, **the payer cannot fix this one** — the recipient must. Preflight says
+so by name.
+
+There is no SOL check, for the same reason there is no gas check on EVM: the facilitator
+pays the fee.
+
+### Dependency
+
+This rail uses `@solana/kit` for the transaction machinery. Kit does not carry the
+associated-token derivation or the SPL instruction encoding, so both are here. It is the
+only rail with a dependency beyond `algosdk`.
+
 ## Which address pays
 
 A multi-chain wallet has a different address on every chain, and which one pays is
@@ -355,8 +414,8 @@ are payable; `unpayableNetworks()` names the rest so a failure says *what* was o
 rather than "payment failed". This replaced a signer hardcoded to Algorand which made
 every EVM and Solana payee unreachable.
 
-Rail slots with nothing behind them today: `svm` (Solana), and `arweave` (a fulfillment
-leg — there is no settlement chain).
+The last rail slot with nothing behind it is `arweave` — a fulfilment leg, with no
+settlement chain, so it may stay that way.
 
 ## Bazaar
 

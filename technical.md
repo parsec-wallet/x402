@@ -21,7 +21,7 @@ payer/                         TypeScript — the wallet side
     client.ts                  probe → choose → quote → approve → sign → submit → record
     protocol.ts                the wire, v1 and v2
     networks.ts                CAIP-2 identity, assets, explorers
-    rails.ts, rails/{avm,evm}  one rail per CAIP-2 namespace
+    rails.ts, rails/{avm,evm,svm}  one rail per CAIP-2 namespace
     quote.ts, receipts.ts      exact pricing, the settlement ledger
     facilitator.ts, bazaar.ts  capability queries and discovery
     adapters/wallets.ts        TransactionSigner, ARC-0001, EIP-1193
@@ -108,12 +108,16 @@ is the price, the asset, the address and the network*, which it can act on immed
 
 ## The two schemes
 
-| | Algorand | EVM |
-|---|---|---|
-| artefact | an atomic group | an EIP-712 signature |
-| sponsor | a `pay` at index 0, unsigned, carrying the whole group's fee | the facilitator, by broadcasting |
-| the payer's part | an `axfer` at index 1, signed | the authorization |
-| replay guard | the group's validity window | a single-use 32-byte nonce the token marks spent |
+| | Algorand | EVM | Solana |
+|---|---|---|---|
+| artefact | an atomic group | an EIP-712 signature | a partially-signed transaction |
+| sponsor | a `pay` at index 0, unsigned, carrying the whole group's fee | the facilitator, by broadcasting | the facilitator, as fee payer |
+| the payer's part | an `axfer` at index 1, signed | the authorization | the `transferChecked` and our signature slot |
+| replay guard | the group's validity window | a single-use 32-byte nonce the token marks spent | the blockhash lifetime |
+
+Solana's is the least obvious: the payer sends a transaction that **cannot execute**,
+because a required signature is missing. The facilitator completes it or it never happens,
+and cannot alter a byte without invalidating the signature already on it.
 
 The Algorand sponsor transaction travels **unsigned** deliberately: signing it is the
 facilitator's job, and a client able to sign it would hold an authority it has no business
@@ -146,8 +150,9 @@ from a delegation. Each door signs one named thing.
 
 ## Limits
 
-- `svm` and `arweave` are empty rail slots; a Solana requirement is reported unpayable by
-  name. See [`payer/src/x402/todo.md`](payer/src/x402/todo.md).
+- `arweave` is the last empty rail slot — a fulfilment leg with no settlement chain.
+- The Solana rail needs `@solana/kit` (an optional peer dependency); the other two need
+  nothing beyond `algosdk`.
 - EVM implements `eip3009` only. `permit2` needs a prior on-chain approval and `erc-7710` a
   smart account; both are refused rather than half-signed.
 - Receipts are per-device — a record for the participant, not a ledger of record. The chain

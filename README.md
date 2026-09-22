@@ -58,6 +58,7 @@ host's implementations belong.
 | protocol | x402 **v2** (`PAYMENT-*` headers), reads **v1** (`X-PAYMENT` + body `accepts`) |
 | Algorand | scheme `exact` — facilitator-sponsored atomic group, USDC ASA or native ALGO |
 | EVM | scheme `exact` — EIP-3009 `transferWithAuthorization` |
+| Solana | scheme `exact` — a partially-signed transaction the facilitator completes |
 | discovery | Bazaar `/discovery/*`, and the `bazaar` extension on a live challenge |
 | receipts | every settlement, with the transaction id that proves it |
 
@@ -104,7 +105,7 @@ would otherwise have the facilitator verify a payment to themselves.
 
 ```bash
 cd payer  && npm install && npx tsc --noEmit && npx vitest run
-#   → 0 type errors, 113 tests passed
+#   → 0 type errors, 131 tests passed
 
 cd seller && pip install -e ".[test]" && python -m pytest
 #   → 52 passed, 1 skipped

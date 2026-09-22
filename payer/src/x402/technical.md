@@ -66,6 +66,19 @@ not.
 until a server quotes in wei, and the failure is silent: a payment for the wrong amount
 that the facilitator rejects for reasons that look unrelated.
 
+### 3½. Everything host-specific is a port — including the price feed
+
+Signing, storage, node endpoints, and the USD price of a non-pegged asset. The last one
+was a late addition, forced by extracting the module into its own repository: `quote.ts`
+read ALGO/USD from a Vestige client, which is a vendor choice, and a portable module has
+no business making one on its host's behalf. `hostUsdRate(symbol)` returns `null` by
+default and on any failure, and a quote with no reading is shown in the asset it is
+denominated in — never wrong, only less convenient. Parsec supplies the Vestige feed
+through the port, like any other host would supply its own.
+
+*Refused:* keeping the feed inside. It would have made the public copy and this one
+diverge on their first day.
+
 ### 4. Verification and settlement are the resource server's calls, not ours
 
 The client builds and signs. The *server* asks a facilitator to verify and settle. This
@@ -86,17 +99,23 @@ different facts, and collapsing them is precisely the defect this module was rew
 fix — the previous flow declared `txId` and never assigned it, so a successful payment left
 no evidence of itself.
 
-## The two schemes
+## The three schemes
 
-Both are `exact`. They differ in what "a signed payment" is.
+All are `exact`. They differ in what "a signed payment" is.
 
-| | Algorand | EVM |
-|---|---|---|
-| artefact | an atomic group | an EIP-712 signature |
-| sponsor | `pay` at index 0, unsigned, carrying the group's whole fee | the facilitator, implicitly, by broadcasting |
-| ours | `axfer` at index 1, signed | the authorization |
-| replay guard | the group's validity window | a single-use 32-byte nonce the token marks spent |
-| what the facilitator cannot do | redirect or alter the transfer | redirect or alter the transfer |
+| | Algorand | EVM | Solana |
+|---|---|---|---|
+| artefact | an atomic group | an EIP-712 signature | a partially-signed transaction |
+| sponsor | `pay` at index 0, unsigned, carrying the group's whole fee | the facilitator, implicitly, by broadcasting | the facilitator, as the transaction's fee payer |
+| ours | `axfer` at index 1, signed | the authorization | the `transferChecked`, and our signature slot |
+| replay guard | the group's validity window | a single-use 32-byte nonce the token marks spent | the blockhash lifetime |
+| what the facilitator cannot do | redirect or alter the transfer | redirect or alter the transfer | alter any byte — doing so invalidates our signature |
+
+Solana's is the most elegant of the three and the least obvious: the payer compiles a
+transaction whose **fee payer is the facilitator**, signs only their own slot, and sends
+something that cannot execute. A transaction missing a required signature is inert. The
+facilitator completes it or it never happens, and it cannot change a byte without
+invalidating the signature already on it.
 
 The Algorand sponsor transaction travels **unsigned** and this is not an oversight: signing
 it is the facilitator's job, and a client able to sign it would hold an authority it has no
@@ -139,11 +158,29 @@ These hold across the module; breaking one is a bug even if tests pass.
 6. **The terms paid are the terms quoted.** A proof that no longer covers its quote is
    dropped, not submitted (`proofStillCovers`).
 
+## Kept in step with the public copy
+
+This module is published standalone at
+[github.com/parsec-wallet/x402](https://github.com/parsec-wallet/x402) — the same files,
+minus the four that reach into Parsec (`adapters/parsec.ts`, `module.ts`, `choices.ts`,
+`bridge.ts`). `protocol.ts`, `networks.ts`, `rails*`, `client.ts`, `quote.ts`, `host.ts`,
+`receipts.ts`, `settings.ts`, `bazaar.ts`, `facilitator.ts` and `adapters/wallets.ts`
+should stay byte-identical in both — 14 files, verified with `diff`, not asserted.
+
+`index.ts` is the one legitimate difference: each barrel lists what its own copy
+contains, and this one also re-exports `bridge`, `constants`, `types`, `oracle`,
+`discount` and `agenticplace-client`, which serve Parsec's identity surface and are not
+part of the portable core. Do not "fix" that.
+
+When the other fourteen drift, the published copy is not what anyone is running, and the
+claim that this is extractable stops being true.
+
 ## Known limits
 
-- **`svm` and `arweave` are empty rail slots.** A Solana requirement is reported unpayable
-  by name. Implementing it means SPL `transferChecked`, ATA derivation and v0 message
-  serialisation — see [`todo.md`](./todo.md).
+- **`arweave` is the last empty rail slot** — a fulfilment leg with no settlement chain.
+- **The Solana rail depends on `@solana/kit`**, unlike the other two, which are
+  dependency-free beyond `algosdk`. Kit supplies the transaction machinery; the ATA
+  derivation and the SPL encoding are ours, because kit does not carry them.
 - **EVM implements `eip3009` only.** `permit2` needs a prior on-chain approval and
   `erc-7710` a smart account; both are refused rather than half-signed.
 - **`extra.decimals` is trusted.** A server misreporting it misprices its own resource;

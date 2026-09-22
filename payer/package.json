@@ -1,7 +1,7 @@
 {
   "name": "@parsec-wallet/x402",
   "version": "0.1.0",
-  "description": "x402 on Algorand and EVM — a payer module that embeds in any wallet",
+  "description": "x402 on Algorand and EVM \u2014 a payer module that embeds in any wallet",
   "license": "Apache-2.0",
   "type": "module",
   "main": "src/x402/index.ts",
@@ -14,12 +14,19 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "algosdk": "^3.0.0"
+    "algosdk": "^3.0.0",
+    "@solana/kit": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
     "algosdk": "^3.5.2",
     "typescript": "^5.6.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "@solana/kit": "^6.10.0"
+  },
+  "peerDependenciesMeta": {
+    "@solana/kit": {
+      "optional": true
+    }
   }
 }

@@ -20,6 +20,8 @@ export { avmRail, buildPaymentGroup, signPaymentGroup, preflightAvm, optInToAsse
 export type { AvmPaymentPayload } from './rails/avm';
 export { evmRail, buildAuthorization, preflightEvm, validityWindow, chainIdOf, randomNonce, setEvmRpc } from './rails/evm';
 export type { EvmPaymentPayload } from './rails/evm';
+export { svmRail, buildSvmPayment, preflightSvm, associatedTokenAddress, encodeTransferChecked, tokenBalance, TOKEN_PROGRAM, TOKEN_2022_PROGRAM } from './rails/svm';
+export type { SvmPaymentPayload } from './rails/svm';
 
 // The flow
 export * from './client';

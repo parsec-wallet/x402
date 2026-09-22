@@ -10,7 +10,7 @@
 
 import algosdk from 'algosdk';
 import { base64ToBytes, bytesToBase64 } from '../protocol';
-import type { AvmSigner, EvmSigner } from '../host';
+import type { AvmSigner, EvmSigner, SvmSigner } from '../host';
 
 /**
  * Any wallet with an `algosdk.TransactionSigner`.
@@ -100,6 +100,50 @@ export function eip1193Signer(address: string, provider: Eip1193Provider): EvmSi
         params: [address, JSON.stringify(typedData)],
       });
       if (typeof signature !== 'string') throw new Error('wallet returned no signature');
+      return signature;
+    },
+  };
+}
+
+
+/** The Solana wallet-standard shape — Phantom, Solflare, Backpack, a WalletConnect session. */
+export interface SolanaProvider {
+  signMessage?(message: Uint8Array): Promise<{ signature: Uint8Array } | Uint8Array>;
+  signTransaction?(tx: unknown): Promise<unknown>;
+}
+
+/**
+ * A Solana signer from a raw ed25519 signing function.
+ *
+ * The smallest useful adapter: give it something that turns bytes into a 64-byte
+ * signature and it is done. A keypair, an HSM, a Rust IPC call — the rail cannot tell.
+ */
+export function solanaSigner(
+  address: string,
+  sign: (message: Uint8Array) => Promise<Uint8Array>,
+): SvmSigner {
+  return { address, signTransaction: sign };
+}
+
+/**
+ * A Solana signer over a browser wallet's `signMessage`.
+ *
+ * Browser wallets expose `signTransaction`, which wants a transaction object in the
+ * library's own shape — and this rail compiles its own message bytes, so the two do not
+ * meet cleanly. `signMessage` takes bytes and returns a signature, which is exactly the
+ * port. Some wallets return `{ signature }` and some return the bytes; both are handled.
+ *
+ * A wallet that refuses to sign raw bytes cannot be used this way, and should pass a
+ * `solanaSigner` wrapping whatever it does offer.
+ */
+export function solanaWalletSigner(address: string, provider: SolanaProvider): SvmSigner {
+  return {
+    address,
+    async signTransaction(message) {
+      if (!provider.signMessage) throw new Error('wallet exposes no signMessage');
+      const answered = await provider.signMessage(message);
+      const signature = answered instanceof Uint8Array ? answered : answered.signature;
+      if (!(signature instanceof Uint8Array)) throw new Error('wallet returned no signature bytes');
       return signature;
     },
   };

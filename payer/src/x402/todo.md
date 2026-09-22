@@ -17,7 +17,7 @@
 | 6 | Work in any wallet — ports, adapters, no host imports in the core | **done** |
 | 7 | Make it easy — one client object, free reads, no key to quote | **done** |
 | 8 | Spend the proof on something — paid BANKON name claim | **done** |
-| 9 | Reach the whole market — Solana, and a memo/receipt extension | **open** |
+| 9 | Reach the whole market — a Solana rail | **done** |
 | 10 | Prove it on mainnet — a real settlement, end to end | **open** |
 
 Steps 1–8 are in `matrix-entry`. What follows is 9 and 10, and the smaller debts.
@@ -25,29 +25,6 @@ Steps 1–8 are in `matrix-entry`. What follows is 9 and 10, and the smaller deb
 ---
 
 ## Open
-
-### A Solana rail — step 9
-
-The last namespace with real volume behind it. A Solana requirement is currently reported
-unpayable by name, which is honest and not much use.
-
-The scheme is client-driven and differs from both existing rails: build a **versioned
-transaction** containing an SPL transfer to `payTo`, sign it **partially** (the facilitator
-adds the `feePayer` signature at settle), base64 the serialised result into
-`payload.transaction`. `extra.memo`, when present, must be used verbatim as the Memo
-instruction rather than a random nonce.
-
-What it needs that we do not have:
-
-- SPL `transferChecked` instruction encoding
-- Associated Token Account derivation — a PDA, so ed25519 curve checks and sha256
-- a Memo instruction
-- v0 message serialisation with the fee payer as first signer, and partial signing
-
-`src/lib/solana/transfer.ts` hand-rolls System Program SOL transfers only. `@solana/kit`
-is already a dependency and makes this tractable. Estimate: a focused session, not an
-afternoon — a mis-derived ATA sends money to an address nobody controls, so it wants its
-own tests against known vectors before it goes near a payment button.
 
 ### A mainnet settlement — step 10
 
@@ -88,9 +65,13 @@ scores — real mainnet settlements, not code.
 - **`bridge.ts` is legacy.** A vault-held algosdk signer, still used by the AORC minters,
   not on the payment path. It retrieves a mnemonic into the renderer, which the rest of
   the module no longer does. Migrating AORC to `parsecAvmSigner` would let it go.
-- **`X402Signers` declares `svm`/`arweave` as `never`.** Deliberate — they type-error at
-  the call site rather than accepting a signer nothing will read — but it will need to
-  change the moment step 9 lands.
+- **`X402Signers` still declares `arweave` as `never`** — it type-errors at the call site
+  rather than accepting a signer nothing will read. `svm` is a real signer now.
+- **The Solana rail has no mainnet exercise.** Its associated-token-account derivation is
+  pinned against two addresses read back from mainnet, and the rest is pinned against a
+  stubbed node. Nothing has been settled with it.
+- **A recipient with no token account cannot be paid**, and unlike the Algorand opt-in the
+  payer cannot fix it. Preflight says so by name; there is nothing else to do.
 - **The EVM rail has no mainnet exercise either**, and its RPC defaults are public
   endpoints that rate-limit. A host in production should configure its own.
 

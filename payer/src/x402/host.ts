@@ -69,11 +69,25 @@ export interface EvmSigner {
   signTransferAuthorization(domain: EvmDomain, authorization: EvmAuthorizationFields): Promise<string>;
 }
 
+/** A Solana signer. One method, because one thing is signed: a compiled transaction. */
+export interface SvmSigner {
+  /** The address paying, base58. */
+  address: string;
+  /**
+   * Sign compiled transaction message bytes; return the 64-byte ed25519 signature.
+   *
+   * Deliberately the smallest thing a Solana wallet can do. A browser wallet wraps its
+   * `signTransaction`; a keypair signs directly. The rail compiles the message and asks
+   * only for a signature over it, so the signer never decides what is being paid.
+   */
+  signTransaction(compiledMessage: Uint8Array): Promise<Uint8Array>;
+}
+
 /** The signers available for a payment, one per rail family. */
 export interface X402Signers {
   avm?: AvmSigner;
   evm?: EvmSigner;
-  svm?: never;
+  svm?: SvmSigner;
   arweave?: never;
 }
 
@@ -145,6 +159,8 @@ export interface X402Host {
   algod(network: string): algosdk.Algodv2;
   /** An EVM JSON-RPC endpoint, for the token balance read before signing. */
   evmRpc(network: string): string;
+  /** A Solana JSON-RPC endpoint, for the blockhash and the recipient's token account. */
+  solanaRpc(network: string): string;
 }
 
 let configured: Partial<X402Host> = {};
@@ -198,6 +214,22 @@ export function hostEvmRpc(network: string): string {
   if (configured.evmRpc) return configured.evmRpc(network);
   return DEFAULT_EVM_RPC[toCaip2(network)] ?? '';
 }
+
+/** A JSON-RPC endpoint for a Solana cluster. */
+export function hostSolanaRpc(network: string): string {
+  if (configured.solanaRpc) return configured.solanaRpc(network);
+  return DEFAULT_SOLANA_RPC[toCaip2(network)] ?? '';
+}
+
+/**
+ * Public Solana endpoints. `api.mainnet-beta.solana.com` is deliberately absent: it
+ * answers 403 to browser-origin JSON-RPC, so a wallet pointed at it fails in a way that
+ * looks like the payment's fault.
+ */
+export const DEFAULT_SOLANA_RPC: Record<string, string> = {
+  'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'https://solana-rpc.publicnode.com',
+  'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1': 'https://api.devnet.solana.com',
+};
 
 /** Public EVM endpoints, per chain. Asked for one `eth_call` per payment and nothing else. */
 export const DEFAULT_EVM_RPC: Record<string, string> = {

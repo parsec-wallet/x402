@@ -66,7 +66,7 @@ What the facilitator cannot do is redirect the money. The recipient and the amou
 inside what the buyer signed. It can refuse to broadcast; it cannot change where the
 payment goes. That asymmetry is why the arrangement is safe to use with a stranger.
 
-## Why the two chains work differently
+## Why each chain works differently
 
 The protocol is one idea with a different implementation per chain, because "a signed
 payment you cannot alter" means different things in different places.
@@ -81,7 +81,13 @@ specific amount to a specific address within a time window. The buyer signs the
 authorization; anyone can submit it and pay the gas. The token itself enforces that the
 authorization is used once.
 
-Different mechanisms, same guarantee: **the payer names the recipient and the amount, and
+**Solana** does something subtler. The payer builds a whole transaction, names the
+facilitator as the one who pays its fee, and signs only their own part. The result is a
+transaction that *cannot run* — a signature is missing. The facilitator adds it and
+submits, or nothing happens at all. It cannot alter the transaction, because changing any
+byte would invalidate the signature already on it.
+
+Three mechanisms, same guarantee: **the payer names the recipient and the amount, and
 nobody downstream can change either.**
 
 ## Why a wallet module rather than a library call

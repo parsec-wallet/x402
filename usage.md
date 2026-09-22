@@ -137,7 +137,7 @@ Free, and it holds no key.
 ## Tests
 
 ```bash
-cd payer  && npx tsc --noEmit && npx vitest run    # 113 tests, 0 type errors
+cd payer  && npx tsc --noEmit && npx vitest run    # 131 tests, 0 type errors
 cd seller && python -m pytest                      # 52 passed, 1 skipped
 ```
 
