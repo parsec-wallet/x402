@@ -2,7 +2,12 @@
 
 **For the wallet owner. Everything below is blocked on something only you hold.**
 
-Written 2026-09-21. The x402 Global Challenge closes **30 September** — nine days.
+Written 2026-09-21, updated 2026-09-22. The x402 Global Challenge closes
+**30 September** — eight days.
+
+**Do the opt-in first.** It is two minutes and it is the critical path: the deployment
+can follow at any time, but until the `payTo` is opted in, nothing that either of you
+builds can settle. One signature unblocks the rest.
 
 ---
 
@@ -19,6 +24,30 @@ Written 2026-09-21. The x402 Global Challenge closes **30 September** — nine d
 | Submission form + Electric Capital | not done |
 
 Two things stand between this and a ranked entry, and neither is code.
+
+### Verified state, 2026-09-22
+
+Every number below was produced by running the command, not by counting files.
+
+| repo | commit | |
+|---|---|---|
+| `parsec-wallet` (private) | `cc6b308` | 558 tests pass, 58 `tsc` errors — all pre-existing, none in x402 |
+| `mindX` (private) | `bea08935e` | 61 x402 tests pass |
+| [`parsec-wallet/x402`](https://github.com/parsec-wallet/x402) (**public**) | `eeed077` | 0 type errors, 131 tests |
+
+The three pre-existing test failures are in `prices-derived`, unrelated to x402 and
+present before this work began. The 58 type errors are all in untracked views reaching
+for library work that has not landed; the tree does not `vite build` for that reason,
+which predates x402 and is recorded in the Parsec repository's own TODO index.
+
+Live checks, same date:
+
+```
+treasury L24WEG…   11.53 ALGO, 0 assets opted in, USDC opted in: false
+POST /coordinator/query   → 401   (must be 402)
+POST /names/algo          → 401
+parsec-wallet/x402        → public
+```
 
 ---
 
@@ -45,7 +74,8 @@ python3 seller/usdc_optin.py                 # prompts for the phrase, hidden
 ```
 
 The script **derives the address first and refuses to sign unless it matches** that payTo,
-so a wrong phrase costs nothing. It prints what it will do and waits for you to type
+so a wrong phrase costs nothing — that refusal path is the one I tested before anything
+else, with a throwaway phrase, and it printed what it derived and sent nothing. It prints what it will do and waits for you to type
 `optin`. The key is never an argument — arguments land in shell history and process
 listings — and never leaves your machine.
 
