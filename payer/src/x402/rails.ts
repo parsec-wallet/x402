@@ -72,6 +72,16 @@ export interface X402Rail {
 
 const rails = new Map<RailFamily, X402Rail>();
 
+/**
+ * Register a rail. The last registration for a family wins.
+ *
+ * Registration is a side effect of importing a rail module, which is what makes
+ * `import './rails/avm'` enough to make Algorand payable. The cost is that **import
+ * order decides which rail signs**: a file that imports `rails/avm` for an unrelated
+ * helper will register the real rail and silently replace a stub a test had put there.
+ * If a payment suddenly reaches a network it should not, look for a new import before
+ * looking at this function.
+ */
 export function registerRail(rail: X402Rail): void {
   rails.set(rail.family, rail);
 }
