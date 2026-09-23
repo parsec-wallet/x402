@@ -14,7 +14,7 @@ const storage = new Map<string, string>();
 const { encodeEnvelope, decodeEnvelope, HEADER_PAYMENT_REQUIRED, HEADER_PAYMENT_RESPONSE, HEADER_PAYMENT_SIGNATURE } =
   await import('../protocol');
 const { registerRail } = await import('../rails');
-const { X402Declined, X402Unpayable, x402Request, HEADER_PAYER_HINT } = await import('../client');
+const { X402Declined, X402Unpayable, X402Indeterminate, settleTimeoutMs, x402Request, HEADER_PAYER_HINT } = await import('../client');
 const { clearReceipts, listReceipts } = await import('../receipts');
 const { setX402Settings } = await import('../settings');
 const { ALGORAND_TESTNET } = await import('../networks');
@@ -215,6 +215,7 @@ describe('when things go wrong', () => {
 
 const { resolvePayer } = await import('../client');
 const { BASE_MAINNET, ALGORAND_MAINNET } = await import('../networks');
+
 describe('resolving the payer', () => {
   const payers = { avm: PAYER, evm: '0x857b06519E91e3A54538791bDbb0E22373e36b66' };
 
@@ -234,4 +235,39 @@ describe('resolving the payer', () => {
     expect(() => resolvePayer(BASE_MAINNET, { payers: { avm: PAYER } })).toThrow(/No EVM address/);
   });
 
+});
+
+
+// ── Bounded waits, and the difference between failed and unknown ─────────────
+
+describe('waiting', () => {
+  it('bounds the paid request by the window the server itself stated', () => {
+    expect(settleTimeoutMs(60)).toBe(60_000);
+    expect(settleTimeoutMs(300)).toBe(180_000);   // capped: nothing hangs forever
+    expect(settleTimeoutMs(1)).toBe(30_000);      // floored: a tiny window must not
+                                                  // make every payment indeterminate
+    expect(settleTimeoutMs(0)).toBe(60_000);      // unstated → a sane default
+  });
+
+  it('reports a silent server as UNKNOWN, not failed, once the payment is sent', async () => {
+    // The money may have moved. Saying "failed" here is how a payer pays twice.
+    let call = 0;
+    globalThis.fetch = vi.fn(async (_url: string, init?: RequestInit) => {
+      call += 1;
+      const headers = (init?.headers ?? {}) as Record<string, string>;
+      if (!headers[HEADER_PAYMENT_SIGNATURE]) {
+        return new Response('{}', { status: 402, headers: { [HEADER_PAYMENT_REQUIRED]: encodeEnvelope(challenge) } });
+      }
+      throw new DOMException('The operation was aborted.', 'TimeoutError');
+    }) as unknown as typeof fetch;
+
+    const error = await x402Request('https://api.example.com/weather', undefined, {
+      payer: PAYER, approve: async () => true,
+    }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(X402Indeterminate);
+    expect(error.message).toMatch(/may have settled/);
+    expect(error.message).toContain('TREASURY');   // names where to look on chain
+    expect(call).toBe(2);
+  });
 });

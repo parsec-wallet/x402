@@ -86,6 +86,29 @@ export class X402Declined extends Error {
   }
 }
 
+/**
+ * The request was sent with a signed payment and no answer came back.
+ *
+ * Deliberately not a failure. The server may have received the payment, settled it, and
+ * failed only on the way back — in which case the money moved and there is a transaction
+ * id on chain that this client never saw. Anything that catches this must say *unknown*,
+ * not *failed*, and the remedy is to look at the chain or ask the server, never to pay
+ * again.
+ */
+export class X402Indeterminate extends Error {
+  readonly url: string;
+  readonly payTo: string;
+  constructor(url: string, payTo: string) {
+    super(
+      `No response after the payment was sent to ${url}. It may have settled. ` +
+        `Check the chain for a transfer to ${payTo} before paying again.`,
+    );
+    this.name = 'X402Indeterminate';
+    this.url = url;
+    this.payTo = payTo;
+  }
+}
+
 export class X402Unpayable extends Error {
   readonly networks: string[];
   constructor(networks: string[]) {
@@ -117,6 +140,31 @@ export interface X402FetchOptions {
   preferNetwork?: string;
   /** Send the payer hint on the initial probe so a server can quote per-payer. Default true. */
   sendPayerHint?: boolean;
+  /**
+   * How long to wait for a resource that has not been paid yet. Default 30 s.
+   *
+   * Only bounds the free half — the probe and the discovery. The paid request is bounded
+   * by the server's own `maxTimeoutSeconds`, because that is the window it said it would
+   * hold the quote open for.
+   */
+  timeoutMs?: number;
+}
+
+/** A probe or discovery that has not cost anything yet. */
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/**
+ * How long to wait after sending a payment.
+ *
+ * The server states `maxTimeoutSeconds` — how long it will hold the quote — so waiting
+ * meaningfully longer is waiting for something that has already expired, and waiting less
+ * gives up on a payment that may still be settling. Floored at 30 s so a server naming
+ * something tiny cannot make every payment indeterminate, and capped at 3 min so nothing
+ * hangs forever.
+ */
+export function settleTimeoutMs(maxTimeoutSeconds: number): number {
+  const stated = Number.isFinite(maxTimeoutSeconds) && maxTimeoutSeconds > 0 ? maxTimeoutSeconds * 1000 : 60_000;
+  return Math.min(Math.max(stated, 30_000), 180_000);
 }
 
 /**
@@ -204,14 +252,21 @@ export async function submitPayment(
   pending: PendingX402Payment,
   payment: PaymentPayload,
 ): Promise<X402PaymentResult> {
-  const response = await fetch(pending.url, {
-    ...pending.requestInit,
-    headers: {
-      ...(pending.requestInit?.headers as Record<string, string> | undefined),
-      ...paymentHeaders(payment),
-      Accept: (pending.requestInit?.headers as Record<string, string> | undefined)?.Accept ?? 'application/json',
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(pending.url, {
+      ...pending.requestInit,
+      headers: {
+        ...(pending.requestInit?.headers as Record<string, string> | undefined),
+        ...paymentHeaders(payment),
+        Accept: (pending.requestInit?.headers as Record<string, string> | undefined)?.Accept ?? 'application/json',
+      },
+      signal: AbortSignal.timeout(settleTimeoutMs(pending.requirement.maxTimeoutSeconds)),
+    });
+  } catch (err) {
+    // The payment is signed and was sent. Silence is not proof it failed.
+    throw new X402Indeterminate(pending.url, pending.requirement.payTo);
+  }
 
   const settlement = readSettlement(response);
   let receipt: X402Receipt | undefined;
@@ -277,7 +332,11 @@ export async function x402Request(
   const hint = hintAddress(options, settings.preferNetwork);
   if (options.sendPayerHint !== false && hint) headers[HEADER_PAYER_HINT] = hint;
 
-  const first = await fetch(url, { ...init, headers });
+  const first = await fetch(url, {
+    ...init,
+    headers,
+    signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+  });
   if (first.status !== 402) {
     return { success: first.ok, response: first, error: first.ok ? undefined : `${first.status} ${first.statusText}` };
   }
@@ -329,10 +388,12 @@ function hintAddress(options: X402FetchOptions, preferNetwork: string): string {
 export async function discoverRequirements(
   url: string,
   init?: RequestInit,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
 ): Promise<PaymentRequired | null> {
   const response = await fetch(url, {
     ...init,
     headers: { Accept: 'application/json', ...(init?.headers as Record<string, string> | undefined) },
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (response.status !== 402) return null;
   return readChallenge(response, url);

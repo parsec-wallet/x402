@@ -31,8 +31,8 @@ need no key.
  adapters/parsec.ts   adapters/wallets.ts     ← implementations, per host
 ```
 
-Dependencies point downward only. `protocol.ts` knows nothing of rails; `rails.ts` knows
-nothing of the client; nothing below `host.ts` knows which application it is inside.
+Dependencies point downward only. [`protocol.ts`](protocol.ts) knows nothing of rails; [`rails.ts`](rails.ts) knows
+nothing of the client; nothing below [`host.ts`](host.ts) knows which application it is inside.
 
 ## Five decisions, and what each one refused
 
@@ -69,7 +69,7 @@ that the facilitator rejects for reasons that look unrelated.
 ### 3½. Everything host-specific is a port — including the price feed
 
 Signing, storage, node endpoints, and the USD price of a non-pegged asset. The last one
-was a late addition, forced by extracting the module into its own repository: `quote.ts`
+was a late addition, forced by extracting the module into its own repository: [`quote.ts`](quote.ts)
 read ALGO/USD from a Vestige client, which is a vendor choice, and a portable module has
 no business making one on its host's behalf. `hostUsdRate(symbol)` returns `null` by
 default and on any failure, and a quote with no reading is shown in the asset it is
@@ -142,7 +142,7 @@ Rust would have no way to tell a payment from a transaction from a delegation. E
 signs one named thing.
 
 In another wallet the same seam is whatever `sign` that wallet provides. The rail cannot
-tell the difference, which is the test `portability.test.ts` exists to keep true.
+tell the difference, which is the test [`portability.test.ts`](__tests__/portability.test.ts) exists to keep true.
 
 ## Invariants
 
@@ -163,11 +163,11 @@ These hold across the module; breaking one is a bug even if tests pass.
 This module is published standalone at
 [github.com/parsec-wallet/x402](https://github.com/parsec-wallet/x402) — the same files,
 minus the four that reach into Parsec (`adapters/parsec.ts`, `module.ts`, `choices.ts`,
-`bridge.ts`). `protocol.ts`, `networks.ts`, `rails*`, `client.ts`, `quote.ts`, `host.ts`,
-`receipts.ts`, `settings.ts`, `bazaar.ts`, `facilitator.ts` and `adapters/wallets.ts`
+`bridge.ts`). [`protocol.ts`](protocol.ts), [`networks.ts`](networks.ts), `rails*`, [`client.ts`](client.ts), [`quote.ts`](quote.ts), [`host.ts`](host.ts),
+[`receipts.ts`](receipts.ts), [`settings.ts`](settings.ts), [`bazaar.ts`](bazaar.ts), [`facilitator.ts`](facilitator.ts) and [`adapters/wallets.ts`](adapters/wallets.ts)
 should stay byte-identical in both — 14 files, verified with `diff`, not asserted.
 
-`index.ts` is the one legitimate difference: each barrel lists what its own copy
+[`index.ts`](index.ts) is the one legitimate difference: each barrel lists what its own copy
 contains, and this one also re-exports `bridge`, `constants`, `types`, `oracle`,
 `discount` and `agenticplace-client`, which serve Parsec's identity surface and are not
 part of the portable core. Do not "fix" that.

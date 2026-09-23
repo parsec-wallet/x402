@@ -176,10 +176,10 @@ chosen from submissions, which is where a differentiated build competes.
 | Payer module | `payer/src/x402/` (mirrored from Parsec) |
 | Seller middleware | `seller/mindx_backend_service/` |
 | Prices and rails | mindX `data/config/x402_pricing.json` |
-| Opt-in tool | `seller/usdc_optin.py` (also `mindX/scripts/usdc_optin.py`) |
-| Protocol, all three schemes, embedding | `docs/x402-integration.md` |
-| Every export, every error | `docs/x402-api.md` |
-| Goal, plan, what is open | `payer/src/x402/todo.md` |
+| Opt-in tool | [`seller/usdc_optin.py`](seller/usdc_optin.py) (also `mindX/scripts/usdc_optin.py`) |
+| Protocol, all three schemes, embedding | [`docs/x402-integration.md`](docs/x402-integration.md) |
+| Every export, every error | [`docs/x402-api.md`](docs/x402-api.md) |
+| Goal, plan, what is open | [`payer/src/x402/todo.md`](payer/src/x402/todo.md) |
 
 ## Known debts, stated rather than buried
 

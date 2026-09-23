@@ -9,7 +9,7 @@
 > **Solana as of 2026-09-21.** Three rails: Algorand, EVM and Solana, all `exact`.
 >
 > **Portable as of 2026-09-19.** The module depends on the application through three
-> small ports (`host.ts`) rather than by importing it. Parsec supplies signing backed by
+> small ports ([`host.ts`](../payer/src/x402/host.ts)) rather than by importing it. Parsec supplies signing backed by
 > Rust; any wallet with an `algosdk.TransactionSigner` — use-wallet, AlgoKit, Pera, Defly,
 > Lute — supplies its own in one line. A test reads the source and fails if the core
 > reaches back into the application again.
@@ -18,7 +18,7 @@
 > `src-tauri/src/lib.rs` and `cargo check` is clean — see
 > [How signing reaches Rust](#how-signing-reaches-rust).
 
-**Also:** [`src/lib/x402/README.md`](../src/lib/x402/README.md) is the module's own entry
+**Also:** [`payer/src/x402/README.md`](../payer/src/x402/README.md) is the module's own entry
 point and quickstart; [x402-api.md](./x402-api.md) is every export, every error and the
 troubleshooting table.
 
@@ -52,7 +52,7 @@ with a key can buy something it has never seen from a seller it will never meet 
 ## The module
 
 ```
-src/lib/x402/
+payer/src/x402/
   protocol.ts        the wire — v1/v2 codec, challenge/payment/settlement envelopes
   networks.ts        CAIP-2 identity, aliases, assets (USDC ASAs), explorers
   rails.ts           the rail registry — one per CAIP-2 namespace
@@ -101,7 +101,7 @@ registrations, and importing it registers the Algorand rail as a side effect.
 | network | `algorand-testnet` | `algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=` |
 | `accepted` in the payment | optional | **required** |
 
-`protocol.ts` reads either and normalizes to the v2 shape. It writes v2, and adds the v1
+[`protocol.ts`](../payer/src/x402/protocol.ts) reads either and normalizes to the v2 shape. It writes v2, and adds the v1
 alias header **only** when the server declared version 1 — a server that names no version
 is assumed current, not assumed ancient.
 
@@ -421,13 +421,13 @@ settlement chain, so it may stay that way.
 
 Facilitators catalogue the resources that settle through them, and a server can declare in
 its own 402 what the endpoint takes and returns (the `bazaar` extension in `extensions`).
-`bazaar.ts` reads `/discovery/resources`; the Bazaar view browses it. Everything there is
+[`bazaar.ts`](../payer/src/x402/bazaar.ts) reads `/discovery/resources`; the Bazaar view browses it. Everything there is
 free, and nothing in it is trusted beyond display — **the price a payment is made against
 is read live from the resource's own 402, every time.**
 
 ## Settlement receipts
 
-`PAYMENT-RESPONSE` carries `{ success, transaction, network, payer }`. `receipts.ts`
+`PAYMENT-RESPONSE` carries `{ success, transaction, network, payer }`. [`receipts.ts`](../payer/src/x402/receipts.ts)
 writes a receipt the moment one is decoded — whether or not the resource then delivered,
 because *the payment settled* and *the resource failed* are two different facts and losing
 the first was the original defect.
@@ -495,8 +495,8 @@ payment with nothing signed, and `x402.pay(pending)` signs and sends it — whic
 ## AgenticPlace and mindX
 
 `agenticplace.pythai.net` and `mindx.pythai.net` are the in-house resource servers.
-mindX's middleware (`mindx_backend_service/x402_middleware.py`, protocol layer
-`x402_protocol.py`) emits both versions of the challenge and prices per endpoint in
+mindX's middleware ([`mindx_backend_service/x402_middleware.py`](../seller/mindx_backend_service/x402_middleware.py), protocol layer
+[`x402_protocol.py`](../seller/mindx_backend_service/x402_protocol.py)) emits both versions of the challenge and prices per endpoint in
 micro-USD from `data/config/x402_pricing.json`. Parsec is a first-class client of it:
 same CAIP-2 vocabulary, same USDC ASA, same facilitator.
 
@@ -576,18 +576,18 @@ x402's to do.
 ## Verification
 
 ```bash
-npx tsc --noEmit && npx vitest run     # 137 tests across src/lib/x402/ and src/lib/bankon-names/
+npx tsc --noEmit && npx vitest run     # 137 tests across payer/src/x402/ and src/lib/bankon-names/
 cd src-tauri && cargo test --lib       # 85 Rust tests (not `cargo test` — see todo.md)
 cd src-tauri && cargo test chain_evm   # 8 EIP-712 tests, once the pack is wired in
 ```
 
-`avm.test.ts` pins the group shape a facilitator verifies against — sponsor first and
+[`avm.test.ts`](../payer/src/x402/__tests__/avm.test.ts) pins the group shape a facilitator verifies against — sponsor first and
 unsigned, payment second and signed, fee on index 0, `paymentIndex` correct.
-`client.test.ts` runs the whole loop against a stubbed resource server, including the
-case where the payment settles and the resource then fails. `evm.test.ts` pins that the
+[`client.test.ts`](../payer/src/x402/__tests__/client.test.ts) runs the whole loop against a stubbed resource server, including the
+case where the payment settles and the resource then fails. [`evm.test.ts`](../payer/src/x402/__tests__/evm.test.ts) pins that the
 authorization says what the server asked for and that unimplemented transfer methods are
 refused rather than signed. `bankon-names/__tests__/pay.test.ts` pins the four ways a
-receipt can fail to be proof of *this* payment. `portability.test.ts` pays end to end with
+receipt can fail to be proof of *this* payment. [`portability.test.ts`](../payer/src/x402/__tests__/portability.test.ts) pays end to end with
 nothing but a bare `algosdk` account and an in-memory store — no Parsec, no Tauri, no
 vault, no `localStorage` — and its last case reads the module's own source and fails if
 the core reaches back into the application.
@@ -601,5 +601,5 @@ the core reaches back into the application.
 - Reference client: `@x402/avm` on npm
 - Developer guide: <https://algorand.co/agentic-commerce/x402/developers>
 - In-house: [x402-api.md](./x402-api.md) (API reference),
-  [`src/lib/x402/README.md`](../src/lib/x402/README.md) (module entry point),
+  [`payer/src/x402/README.md`](../payer/src/x402/README.md) (module entry point),
   `docs/integration/toon-naming-x402.md`, `docs/bankon-names.md`, and mindX `docs/X402.md`

@@ -1,9 +1,9 @@
 # x402 — API reference
 
-Every export of `src/lib/x402/`, what it is for, and what it throws.
+Every export of `payer/src/x402/`, what it is for, and what it throws.
 
 The narrative lives in [x402-integration.md](./x402-integration.md); the module's own
-entry point is [`src/lib/x402/README.md`](../src/lib/x402/README.md). This page is the
+entry point is [`payer/src/x402/README.md`](../payer/src/x402/README.md). This page is the
 surface.
 
 > Generated against the source on 2026-09-19 and checked symbol by symbol. If something
@@ -11,7 +11,7 @@ surface.
 
 ---
 
-## The short way in — `pay.ts`
+## The short way in — [`pay.ts`](../payer/src/x402/pay.ts)
 
 ### `createX402Client(options?) → X402Client`
 
@@ -43,7 +43,7 @@ interface X402ClientOptions {
 
 ---
 
-## The ports — `host.ts`
+## The ports — [`host.ts`](../payer/src/x402/host.ts)
 
 Everything that is not the protocol crosses one of these.
 
@@ -106,7 +106,7 @@ holding nothing rather than failing.
 
 ## Adapters
 
-### `adapters/wallets.ts` — any wallet
+### [`adapters/wallets.ts`](../payer/src/x402/adapters/wallets.ts) — any wallet
 
 | | |
 |---|---|
@@ -133,7 +133,7 @@ The only file in the module that knows Parsec exists.
 
 ---
 
-## The flow — `client.ts`
+## The flow — [`client.ts`](../payer/src/x402/client.ts)
 
 | | |
 |---|---|
@@ -172,7 +172,7 @@ surface needs and nothing it must not have.
 
 ---
 
-## The wire — `protocol.ts`
+## The wire — [`protocol.ts`](../payer/src/x402/protocol.ts)
 
 | | |
 |---|---|
@@ -195,7 +195,7 @@ Types: `ResourceInfo`, `PaymentRequirements`, `PaymentRequired`, `PaymentPayload
 
 ---
 
-## Networks — `networks.ts`
+## Networks — [`networks.ts`](../payer/src/x402/networks.ts)
 
 | | |
 |---|---|
@@ -215,7 +215,7 @@ Types: `Caip2`, `RailFamily`, `WalletNetwork`, `NetworkDescriptor`, `AssetDescri
 
 ---
 
-## Rails — `rails.ts`
+## Rails — [`rails.ts`](../payer/src/x402/rails.ts)
 
 | | |
 |---|---|
@@ -242,7 +242,7 @@ interface X402Rail {
 `{ code, message, remedy? }` with code `not-opted-in | insufficient-funds | no-account |
 unsupported | other`.
 
-### `rails/avm.ts` — Algorand
+### [`rails/avm.ts`](../payer/src/x402/rails/avm.ts) — Algorand
 
 | | |
 |---|---|
@@ -256,7 +256,7 @@ unsupported | other`.
 | `signAndSend(signer, txn, network, waitRounds?)` | the shared sign-submit-confirm primitive |
 | `walletNetworkFor(network)` | CAIP-2 → the host's network selector |
 
-### `rails/evm.ts` — EVM
+### [`rails/evm.ts`](../payer/src/x402/rails/evm.ts) — EVM
 
 | | |
 |---|---|
@@ -272,7 +272,7 @@ unsupported | other`.
 
 ## Quoting, receipts, settings
 
-### `quote.ts`
+### [`quote.ts`](../payer/src/x402/quote.ts)
 
 | | |
 |---|---|
@@ -284,7 +284,7 @@ unsupported | other`.
 `decimals`, `assetSymbol`, `networkLabel`, `amountDisplay`, `usdMicro`, `usdDisplay`,
 `usdSource` (`pegged | oracle | none`) and `testnet`.
 
-### `receipts.ts`
+### [`receipts.ts`](../payer/src/x402/receipts.ts)
 
 | | |
 |---|---|
@@ -297,7 +297,7 @@ unsupported | other`.
 | `onReceipts(fn)` | subscribe; returns an unsubscribe |
 | `clearReceipts()` | |
 
-### `settings.ts`
+### [`settings.ts`](../payer/src/x402/settings.ts)
 
 | | default |
 |---|---|
@@ -313,7 +313,7 @@ unsupported | other`.
 
 ## Facilitator and Bazaar
 
-### `facilitator.ts`
+### [`facilitator.ts`](../payer/src/x402/facilitator.ts)
 
 | | |
 |---|---|
@@ -323,7 +323,7 @@ unsupported | other`.
 | `verifyPayment(payment, requirements, url?)` | a dry run |
 | `settlePayment(payment, requirements, url?)` | for operating a resource server — a client never calls it |
 
-### `bazaar.ts`
+### [`bazaar.ts`](../payer/src/x402/bazaar.ts)
 
 | | |
 |---|---|

@@ -77,7 +77,7 @@ payment path.
 
 ## The three ports
 
-Everything that is not the protocol lives behind `host.ts`, which is why the same code
+Everything that is not the protocol lives behind [`host.ts`](host.ts), which is why the same code
 runs in another wallet:
 
 | port | default | override when |

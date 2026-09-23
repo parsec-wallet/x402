@@ -107,7 +107,10 @@ export function railFor(network: string): X402Rail | null {
 /** Whether a registered rail can satisfy this requirement. */
 export function canPay(requirement: PaymentRequirements): boolean {
   const rail = railFor(requirement.network);
-  return !!rail && rail.schemes.includes(requirement.scheme);
+  if (!rail || !rail.schemes.includes(requirement.scheme)) return false;
+  // `protocol.ts` normalizes an unreadable amount to '0'. A quote of nothing is not a
+  // quote, and signing a zero transfer would spend a fee to move nothing.
+  return /^\d+$/.test(requirement.amount) && BigInt(requirement.amount) > 0n;
 }
 
 /**

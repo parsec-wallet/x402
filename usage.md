@@ -141,7 +141,7 @@ cd payer  && npx tsc --noEmit && npx vitest run    # 131 tests, 0 type errors
 cd seller && python -m pytest                      # 52 passed, 1 skipped
 ```
 
-`payer/src/x402/__tests__/portability.test.ts` pays end to end with a bare `algosdk`
+[`payer/src/x402/__tests__/portability.test.ts`](payer/src/x402/__tests__/portability.test.ts) pays end to end with a bare `algosdk`
 account and an in-memory store, then reads the module's own source and fails if anything
 in it reaches outside the module.
 

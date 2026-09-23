@@ -38,7 +38,7 @@ seller/                        Python — the endpoint side
 ```
 
 Dependencies point one way. Nothing in `payer/src/x402` imports anything outside itself
-except `money.ts`, and a test enforces that by reading the source.
+except [`money.ts`](payer/src/money.ts), and a test enforces that by reading the source.
 
 ## The payer: five decisions, and what each refused
 
@@ -71,7 +71,7 @@ server quotes in wei, and the failure is silent.
 ### 4. Everything host-specific is a port
 
 Signing, storage, node endpoints, and the USD price of a non-pegged asset. Four small
-interfaces in `host.ts`; the defaults work without configuration.
+interfaces in [`host.ts`](payer/src/x402/host.ts); the defaults work without configuration.
 
 *Refused:* reaching for a price feed. Choosing a vendor on the host's behalf is not the
 module's business, and a quote shown in the asset it is denominated in is the honest

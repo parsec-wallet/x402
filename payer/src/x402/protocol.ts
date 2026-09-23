@@ -128,6 +128,26 @@ function str(value: unknown, fallback = ''): string {
 }
 
 /**
+ * A non-negative decimal integer, or `'0'`.
+ *
+ * The amount is the one field on the wire that decides how much money moves, and it
+ * arrives from a server this client has no reason to trust. Left unchecked it reaches
+ * `BigInt()`, where `'0x10'` is silently 16 rather than 10, `'-1'` is a negative
+ * transfer, and `'1e400'` throws in the middle of a payment instead of before one.
+ *
+ * Anything that is not plainly a decimal integer becomes `'0'`, which every rail then
+ * refuses — a quote of nothing is unpayable, which is the correct outcome for a
+ * requirement nobody can read.
+ */
+function amountOrZero(raw: unknown): string {
+  if (typeof raw === 'number') return Number.isSafeInteger(raw) && raw >= 0 ? String(raw) : '0';
+  if (typeof raw !== 'string') return '0';
+  const trimmed = raw.trim();
+  // No sign, no exponent, no radix prefix, no separators. Just digits.
+  return /^\d+$/.test(trimmed) ? String(BigInt(trimmed)) : '0';
+}
+
+/**
  * Normalize one `accepts[]` entry from either version.
  *
  * `amount` is taken from `amount` (v2) then `maxAmountRequired` (v1). It stays a
@@ -136,7 +156,8 @@ function str(value: unknown, fallback = ''): string {
  */
 export function normalizeRequirement(raw: unknown): PaymentRequirements {
   const r = asRecord(raw);
-  const amount = str(r.amount) || str(r.maxAmountRequired) || '0';
+  const declared = r.amount ?? r.maxAmountRequired;
+  const amount = amountOrZero(declared);
   const network = toCaip2(str(r.network));
   return {
     scheme: str(r.scheme, 'exact'),
