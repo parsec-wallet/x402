@@ -1,4 +1,4 @@
-// Parsec x402 — the short way in.
+// PARSEC x402 — the short way in.
 //
 // Everything below this file is available piecemeal, and using it that way means knowing
 // about rails, requirements, quotes, preflight and receipts before paying for anything.

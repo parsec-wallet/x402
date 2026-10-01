@@ -9,7 +9,7 @@ Updated 2026-09-30. What is live, what is not yet, and who has to do the rest.
 | Payer module, three rails (Algorand, EVM, Solana) | **done** — `payer/src/x402/` |
 | Seller middleware (402 challenge, verify, settle, Bazaar) | **done** — `seller/mindx_backend_service/` |
 | `https://mindx.pythai.net/names/*` answers a correct 402 | **live** since 2026-09-30 |
-| Parsec registers a `.algo` name by paying the service fee over x402 | **done** in Parsec (`.algo Names`) |
+| PARSEC registers a `.algo` name by paying the service fee over x402 | **done** in PARSEC (`.algo Names`) |
 | The receiving `payTo` opted in to USDC (ASA `31566704`) | **in progress** — moving to a new account |
 | One real mainnet settlement | follows the opt-in |
 
@@ -66,7 +66,7 @@ facilitator's catalogue keys a merchant by that address.
 
 ## Then: one real payment
 
-Pay one endpoint on **mainnet** from Parsec (`.algo Names` → Review & register → Pay &
+Pay one endpoint on **mainnet** from PARSEC (`.algo Names` → Review & register → Pay &
 register, or the x402 desk) or any wallet. The paid response carries the settlement
 transaction id; the USDC lands in the `payTo`; the facilitator lists the endpoint in its
 catalogue after the first settlement.
@@ -75,7 +75,7 @@ catalogue after the first settlement.
 
 | | |
 |---|---|
-| Payer module | `payer/src/x402/` (mirrored from Parsec) |
+| Payer module | `payer/src/x402/` (mirrored from PARSEC) |
 | Seller middleware | `seller/mindx_backend_service/` |
 | Prices and rails | mindX `data/config/x402_pricing.json` |
 | Opt-in tool | [`seller/usdc_optin.py`](seller/usdc_optin.py) |

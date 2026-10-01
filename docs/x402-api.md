@@ -120,7 +120,7 @@ for *here for context, do not sign* — which is what a sponsored group needs.
 `eip1193Signer` assembles the typed-data document itself, so the wallet cannot be shown
 anything but an EIP-3009 authorization.
 
-### `adapters/parsec.ts` — Parsec
+### `adapters/parsec.ts` — PARSEC
 
 | | |
 |---|---|
@@ -129,7 +129,7 @@ anything but an EIP-3009 authorization.
 | `signersForAccount(account)` | every signer an account can offer |
 | `payersFromAccount(account)` | addresses only, for the read-only paths |
 
-The only file in the module that knows Parsec exists.
+The only file in the module that knows PARSEC exists.
 
 ---
 
@@ -359,7 +359,7 @@ Two typed errors; everything else is an `Error` whose message names the cause.
 | `no algod endpoint for <caip2>` | a network with no default and none configured | `configureX402Host({ algod })` |
 | `no RPC configured for <network>` | same, for EVM | `configureX402Host({ evmRpc })` or `setEvmRpc` |
 | `unsupported x402 network <n>` | a CAIP-2 namespace with no rail family | expected for an exotic chain |
-| `vault is locked` | **Parsec only** — signing was reached with no unlocked vault | unlock first; the signer cannot prompt |
+| `vault is locked` | **PARSEC only** — signing was reached with no unlocked vault | unlock first; the signer cannot prompt |
 
 A facilitator or Bazaar HTTP failure throws with the status and URL.
 `probeFacilitator()` is the exception: it returns `{ reachable: false, error }`, because a

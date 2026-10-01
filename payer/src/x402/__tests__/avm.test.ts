@@ -34,7 +34,7 @@ const { normalizeChallenge, normalizeRequirement, base64ToBytes } = await import
 
 /**
  * A signer in the ecosystem's own shape — this is what any wallet passes in, and what
- * the test uses in place of Parsec's Rust one. Nothing about the rail knows the difference.
+ * the test uses in place of PARSEC's Rust one. Nothing about the rail knows the difference.
  */
 const signer = {
   address: PAYER,

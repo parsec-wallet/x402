@@ -1,4 +1,4 @@
-// Parsec x402 — the settlement ledger.
+// PARSEC x402 — the settlement ledger.
 //
 // The old payment flow declared `txId` and never assigned it: nothing read
 // `X-PAYMENT-RESPONSE`, so a payment that succeeded left no proof it had. Every

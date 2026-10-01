@@ -98,7 +98,7 @@ asks it to sign a transaction it has built and can show you.
 
 On Algorand that signer is `algosdk.TransactionSigner` — the type the whole ecosystem
 already uses — so a wallet that can sign anything can sign this, with no adapter. On
-Parsec, the signer is backed by Rust holding the seed; a browser wallet passes its own.
+PARSEC, the signer is backed by Rust holding the seed; a browser wallet passes its own.
 The module cannot tell them apart, which is the property that lets it live in any wallet
 at all.
 

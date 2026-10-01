@@ -69,7 +69,7 @@ read live from the resource's own 402 at payment time**, never from here.
 | `algosdk.TransactionSigner` (use-wallet, AlgoKit, Pera, Defly) | `algorandSigner(address, signer)` |
 | ARC-0001 `signTxns` (Lute, WalletConnect) | `arc0001Signer(address, provider)` |
 | EIP-1193 `request` (MetaMask, Rabby, WalletConnect) | `eip1193Signer(address, provider)` |
-| Parsec's vault | `signersForAccount(account)` |
+| PARSEC's vault | `signersForAccount(account)` |
 
 ```ts
 // use-wallet

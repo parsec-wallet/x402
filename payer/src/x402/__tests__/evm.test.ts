@@ -13,7 +13,7 @@ const signCalls: Array<{ address: string; domain: Record<string, unknown>; autho
 const { buildAuthorization, chainIdOf, randomNonce, validityWindow, preflightEvm, evmRail } = await import('../rails/evm');
 type EvmSigner = import('../host').EvmSigner;
 
-/** Any wallet's EVM signer. The rail cannot tell this from Parsec's Rust-backed one. */
+/** Any wallet's EVM signer. The rail cannot tell this from PARSEC's Rust-backed one. */
 const signer: EvmSigner = {
   address: PAYER,
   async signTransferAuthorization(domain, authorization) {

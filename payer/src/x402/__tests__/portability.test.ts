@@ -1,9 +1,9 @@
 // The claim this module makes is that another wallet can use it. These are the tests that
-// hold it to that: everything here runs with no Parsec, no Tauri, no `localStorage`, and
+// hold it to that: everything here runs with no PARSEC, no Tauri, no `localStorage`, and
 // no vault — a bare `algosdk` account and an in-memory store, which is also what an
 // autonomous agent has.
 //
-// If any of these start needing a Parsec import, the claim has quietly stopped being true.
+// If any of these start needing a PARSEC import, the claim has quietly stopped being true.
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import algosdk from 'algosdk';
@@ -85,7 +85,7 @@ beforeEach(() => {
   globalThis.fetch = server() as unknown as typeof fetch;
 });
 
-describe('a wallet that is not Parsec', () => {
+describe('a wallet that is not PARSEC', () => {
   it('pays with nothing but an algosdk account and four lines', async () => {
     // Exactly what a use-wallet / AlgoKit / Pera integration already has to hand.
     const signer = algorandSigner(
@@ -242,7 +242,7 @@ describe('the core imports nothing from the application', () => {
   // An extraction of this module would take it along; it is a primitive, not the host.
   const ALLOWED_IMPORTS = new Set(['../money']);
 
-  it('has no Parsec import outside the adapter and the integration layer', async () => {
+  it('has no PARSEC import outside the adapter and the integration layer', async () => {
     const { readdirSync, readFileSync, statSync } = await import('node:fs');
     const { dirname, join, relative, resolve } = await import('node:path');
 

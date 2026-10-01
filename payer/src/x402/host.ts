@@ -1,12 +1,12 @@
-// Parsec x402 — the host ports.
+// PARSEC x402 — the host ports.
 //
 // Everything in this module that is not the protocol lives behind one of three small
-// interfaces: how to sign, where to reach a node, and where to keep a receipt. Parsec
+// interfaces: how to sign, where to reach a node, and where to keep a receipt. PARSEC
 // supplies implementations backed by Rust and `localStorage`; a different wallet supplies
 // its own and the rest of the module does not notice.
 //
 // This is what "works in another wallet" actually requires. Before it, `rails/avm.ts`
-// imported Parsec's `chain_algo` IPC directly, so the payment path could only ever run
+// imported PARSEC's `chain_algo` IPC directly, so the payment path could only ever run
 // inside the Tauri shell — the protocol work was portable and the one line that mattered
 // was not.
 //

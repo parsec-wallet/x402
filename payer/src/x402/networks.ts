@@ -1,4 +1,4 @@
-// Parsec x402 — CAIP-2 network identity and the assets quoted on each one.
+// PARSEC x402 — CAIP-2 network identity and the assets quoted on each one.
 //
 // One table, read by every rail. x402 v2 names a network by its CAIP-2 id; v1 named
 // it with a short alias ("algorand-testnet", "base"). Servers in the wild still emit
@@ -14,7 +14,7 @@
 /**
  * A host's own network selector.
  *
- * Structurally identical to Parsec's `NetworkId`, declared here so the module's core
+ * Structurally identical to PARSEC's `NetworkId`, declared here so the module's core
  * imports nothing from the application embedding it.
  */
 export type WalletNetwork = 'mainnet' | 'testnet' | 'betanet';
@@ -68,7 +68,7 @@ const ALIASES: Record<string, Caip2> = {
  *
  * Bare `mainnet` / `testnet` are ambiguous across chains, so they resolve only when
  * a `family` is given; otherwise the input comes back unchanged. Unknown ids are
- * returned as-is — a network Parsec has never heard of is opaque, not an error.
+ * returned as-is — a network PARSEC has never heard of is opaque, not an error.
  */
 export function toCaip2(network: string, family: RailFamily = 'avm'): Caip2 {
   if (!network) return network as Caip2;
@@ -109,7 +109,7 @@ export interface NetworkDescriptor {
   label: string;
   family: RailFamily;
   testnet: boolean;
-  /** Parsec's own network selector, where the chain has one. */
+  /** PARSEC's own network selector, where the chain has one. */
   walletNetwork?: WalletNetwork;
   /** Explorer base for a settled transaction id. */
   explorerTx?: string;
@@ -151,7 +151,7 @@ export interface AssetDescriptor {
 }
 
 /**
- * The assets Parsec can name without asking the server. A requirement may quote
+ * The assets PARSEC can name without asking the server. A requirement may quote
  * anything; `extra.decimals` on the wire always wins over this table.
  */
 export const ASSETS: AssetDescriptor[] = [

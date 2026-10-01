@@ -1,4 +1,4 @@
-// Parsec x402 — the EVM rail, scheme `exact`, EIP-3009.
+// PARSEC x402 — the EVM rail, scheme `exact`, EIP-3009.
 //
 // Where Algorand builds an atomic group, EVM signs an authorization. The payer signs an
 // EIP-712 `TransferWithAuthorization` naming the recipient, the amount and a validity
@@ -12,7 +12,7 @@
 // The nonce is 32 random bytes and single-use — the token contract marks it spent, which
 // is what stops a facilitator replaying an authorization it has already settled.
 //
-// Signing goes through whatever `EvmSigner` the caller supplied. Parsec passes one backed
+// Signing goes through whatever `EvmSigner` the caller supplied. PARSEC passes one backed
 // by Rust (`chain_evm_sign_transfer_authorization`), which builds the EIP-712 digest itself
 // from named fields — the key never enters the renderer and the renderer cannot ask for a
 // signature over anything else. A browser wallet passes one wrapping

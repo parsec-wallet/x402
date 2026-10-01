@@ -1,4 +1,4 @@
-// Parsec Wallet — Exact Money Arithmetic
+// PARSEC Wallet — Exact Money Arithmetic
 //
 // cypherpunk4096 commitment IV, "precision without approximation":
 //

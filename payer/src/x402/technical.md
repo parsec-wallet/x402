@@ -73,7 +73,7 @@ was a late addition, forced by extracting the module into its own repository: [`
 read ALGO/USD from a Vestige client, which is a vendor choice, and a portable module has
 no business making one on its host's behalf. `hostUsdRate(symbol)` returns `null` by
 default and on any failure, and a quote with no reading is shown in the asset it is
-denominated in — never wrong, only less convenient. Parsec supplies the Vestige feed
+denominated in — never wrong, only less convenient. PARSEC supplies the Vestige feed
 through the port, like any other host would supply its own.
 
 *Refused:* keeping the feed inside. It would have made the public copy and this one
@@ -162,14 +162,14 @@ These hold across the module; breaking one is a bug even if tests pass.
 
 This module is published standalone at
 [github.com/parsec-wallet/x402](https://github.com/parsec-wallet/x402) — the same files,
-minus the four that reach into Parsec (`adapters/parsec.ts`, `module.ts`, `choices.ts`,
+minus the four that reach into PARSEC (`adapters/parsec.ts`, `module.ts`, `choices.ts`,
 `bridge.ts`). [`protocol.ts`](protocol.ts), [`networks.ts`](networks.ts), `rails*`, [`client.ts`](client.ts), [`quote.ts`](quote.ts), [`host.ts`](host.ts),
 [`receipts.ts`](receipts.ts), [`settings.ts`](settings.ts), [`bazaar.ts`](bazaar.ts), [`facilitator.ts`](facilitator.ts) and [`adapters/wallets.ts`](adapters/wallets.ts)
 should stay byte-identical in both — 14 files, verified with `diff`, not asserted.
 
 [`index.ts`](index.ts) is the one legitimate difference: each barrel lists what its own copy
 contains, and this one also re-exports `bridge`, `constants`, `types`, `oracle`,
-`discount` and `agenticplace-client`, which serve Parsec's identity surface and are not
+`discount` and `agenticplace-client`, which serve PARSEC's identity surface and are not
 part of the portable core. Do not "fix" that.
 
 When the other fourteen drift, the published copy is not what anyone is running, and the

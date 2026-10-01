@@ -272,7 +272,7 @@ def settlement_headers(record: Mapping[str, Any]) -> Dict[str, str]:
 def replay_key(network: str, payload: Mapping[str, Any]) -> Optional[str]:
     """Derive a stable, permanent replay key for a payment payload.
 
-    EVM (EIP-3009): the single-use ``authorization.nonce``. AVM (Parsec): the
+    EVM (EIP-3009): the single-use ``authorization.nonce``. AVM (PARSEC): the
     ``paymentIndex`` txn's id / group hash if present, else a hash of the
     ``paymentGroup``. Returns ``"<caip2>:<key>"`` or ``None`` if no key found.
     """

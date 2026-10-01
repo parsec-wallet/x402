@@ -1,9 +1,9 @@
-// Parsec x402 — Bazaar discovery.
+// PARSEC x402 — Bazaar discovery.
 //
 // The `bazaar` extension lets a resource server declare, in its own 402 challenge, what
 // the endpoint takes and returns; facilitators index those declarations into a catalogue
 // at `/discovery/*`. That catalogue is how an agent finds something to pay for without a
-// human first pasting a URL, and it is what makes Parsec's Agents tier a market rather
+// human first pasting a URL, and it is what makes PARSEC's Agents tier a market rather
 // than a bookmark list.
 //
 // Everything here is read-only and free. Nothing in a catalogue entry is trusted beyond

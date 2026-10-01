@@ -1,5 +1,5 @@
 """x402 v2 multi-rail conformance tests: protocol codec, CAIP-2 router,
-Algorand/Parsec paymentGroup, and the Arweave ANS-104 signer.
+Algorand/PARSEC paymentGroup, and the Arweave ANS-104 signer.
 
 These are offline/unit tests — no chain, no facilitator, no network.
 """
@@ -82,7 +82,7 @@ def test_settlement_headers_emit_both_versions():
     assert json.loads(base64.b64decode(hdrs["PAYMENT-RESPONSE"]))["tx_hash"] == "0xdead"
 
 
-# ── Algorand / Parsec payment group ──────────────────────────────────────────
+# ── Algorand / PARSEC payment group ──────────────────────────────────────────
 def test_avm_parsec_payment_group_fee_abstracted():
     pytest.importorskip("algosdk")
     from algosdk import account, mnemonic, encoding

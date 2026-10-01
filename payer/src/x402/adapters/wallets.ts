@@ -1,4 +1,4 @@
-// Adapters for wallets that are not Parsec.
+// Adapters for wallets that are not PARSEC.
 //
 // The Algorand side needs no adapter at all — `AvmSigner.sign` is
 // `algosdk.TransactionSigner`, so a wallet that has one is a one-line wrap. These exist

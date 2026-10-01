@@ -1,10 +1,10 @@
-// Parsec x402 — the facilitator, read-only.
+// PARSEC x402 — the facilitator, read-only.
 //
 // A facilitator does three things: it declares what it can settle (`/supported`), it
 // verifies and submits payment groups for resource servers (`/verify`, `/settle`), and
 // it catalogues the resources that settle through it (`/discovery/*` — the Bazaar).
 //
-// Parsec is a client, so it calls the first and the third. `/verify` and `/settle` are
+// PARSEC is a client, so it calls the first and the third. `/verify` and `/settle` are
 // the *resource server's* calls to make; a client that settled its own payment would be
 // asserting the payment succeeded to the party it is trying to convince. They are here
 // only as a read-only dry run the desk can offer before a payment is sent.

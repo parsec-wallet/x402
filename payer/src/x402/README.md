@@ -8,7 +8,7 @@ Nothing is registered, nothing is subscribed to, no account exists anywhere — 
 payment is the authentication**. That is what makes it the natural rail for agents: one
 with a key can buy something it has never seen from a seller it will never meet again.
 
-This module is the **buyer**. Parsec is one host; any wallet can be another.
+This module is the **buyer**. PARSEC is one host; any wallet can be another.
 
 ## Quickstart
 
@@ -64,9 +64,9 @@ facilitator.ts    /supported, /verify, /settle — read-only from a client
 bazaar.ts         the catalogue of paid resources
 settings.ts       preferred network, facilitator, auto-approve cap
 adapters/
-  parsec.ts       Parsec's ports, Rust-backed — the only file that knows Parsec exists
+  parsec.ts       PARSEC's ports, Rust-backed — the only file that knows PARSEC exists
   wallets.ts      algosdk.TransactionSigner, ARC-0001, EIP-1193
-module.ts         registerModule() — Parsec's routes and dashboard tile
+module.ts         registerModule() — PARSEC's routes and dashboard tile
 choices.ts        privilege: sign · reach: external · persistence: device
 ```
 

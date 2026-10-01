@@ -1,4 +1,4 @@
-# x402 — paying for resources from Parsec
+# x402 — paying for resources from PARSEC
 
 > **Status 2026-09-18.** Rewritten against the published protocol. The module speaks
 > x402 **v2** (and reads v1), implements the **`exact` scheme on Algorand** (sponsored
@@ -9,7 +9,7 @@
 > **Solana as of 2026-09-21.** Three rails: Algorand, EVM and Solana, all `exact`.
 >
 > **Portable as of 2026-09-19.** The module depends on the application through three
-> small ports ([`host.ts`](../payer/src/x402/host.ts)) rather than by importing it. Parsec supplies signing backed by
+> small ports ([`host.ts`](../payer/src/x402/host.ts)) rather than by importing it. PARSEC supplies signing backed by
 > Rust; any wallet with an `algosdk.TransactionSigner` — use-wallet, AlgoKit, Pera, Defly,
 > Lute — supplies its own in one line. A test reads the source and fails if the core
 > reaches back into the application again.
@@ -34,7 +34,7 @@ payment *is* the authentication. That is why it is the natural rail for agents: 
 with a key can buy something it has never seen from a seller it will never meet again.
 
 ```
-   Parsec                    Resource server              Facilitator            Algorand
+   PARSEC                    Resource server              Facilitator            Algorand
      │  GET /weather              │                            │                     │
      │ ─────────────────────────► │                            │                     │
      │  402 + PAYMENT-REQUIRED    │                            │                     │
@@ -66,7 +66,7 @@ payer/src/x402/
   settings.ts        preferred network, facilitator, auto-approve cap
   host.ts            the ports — signing, storage, nodes — and their defaults
   pay.ts             createX402Client(): the whole module behind one object
-  adapters/parsec.ts Parsec's port implementations, Rust-backed
+  adapters/parsec.ts PARSEC's port implementations, Rust-backed
   adapters/wallets.ts  algosdk.TransactionSigner, ARC-0001 and EIP-1193 adapters
   module.ts          registerModule() — routes, rail, dashboard tile
   choices.ts         privilege: sign · reach: external · persistence: device
@@ -147,7 +147,7 @@ their own fee.
 
 ### Signing
 
-Parsec builds the transactions, hands Rust the exact `TX`-prefixed preimage from
+PARSEC builds the transactions, hands Rust the exact `TX`-prefixed preimage from
 `txn.bytesToSign()`, and attaches the returned signature. The mnemonic does not enter the
 renderer:
 
@@ -357,7 +357,7 @@ createX402Client({
 | `algorandSigner(address, signer)` | anything with an `algosdk.TransactionSigner` |
 | `arc0001Signer(address, provider)` | a raw ARC-0001 `signTxns` provider — Lute, a WalletConnect session |
 | `eip1193Signer(address, provider)` | the EVM rail, over `eth_signTypedData_v4` |
-| `parsecAvmSigner` / `parsecEvmSigner` | Parsec's own, backed by Rust (`adapters/parsec.ts`) |
+| `parsecAvmSigner` / `parsecEvmSigner` | PARSEC's own, backed by Rust (`adapters/parsec.ts`) |
 
 `arc0001Signer` sends transactions the payer does not own with `signers: []` — ARC-0001's
 way of saying *this one is here for context, do not sign it*, which is exactly what a
@@ -379,7 +379,7 @@ await x402.facilitator();                         // what can be settled, and wh
 An agent deciding whether a resource is worth paying for should not have to hold a key to
 find out what it costs.
 
-### What is still Parsec's
+### What is still PARSEC's
 
 Three files are the integration layer and are coupled on purpose: `adapters/parsec.ts`
 (the port implementations), `module.ts` (routes and the dashboard tile) and `choices.ts`
@@ -461,7 +461,7 @@ A payment settles through whichever facilitator the resource's own `extra.feePay
 — that is per-resource and not ours to configure. The setting above governs capability
 queries and discovery only.
 
-## Using it from Parsec
+## Using it from PARSEC
 
 ```ts
 import { createX402Client } from './lib/x402';
@@ -497,7 +497,7 @@ payment with nothing signed, and `x402.pay(pending)` signs and sends it — whic
 `agenticplace.pythai.net` and `mindx.pythai.net` are the in-house resource servers.
 mindX's middleware ([`mindx_backend_service/x402_middleware.py`](../seller/mindx_backend_service/x402_middleware.py), protocol layer
 [`x402_protocol.py`](../seller/mindx_backend_service/x402_protocol.py)) emits both versions of the challenge and prices per endpoint in
-micro-USD from `data/config/x402_pricing.json`. Parsec is a first-class client of it:
+micro-USD from `data/config/x402_pricing.json`. PARSEC is a first-class client of it:
 same CAIP-2 vocabulary, same USDC ASA, same facilitator.
 
 `agenticplace-client.ts` covers the non-payment surfaces — agent discovery, SmartOracle
@@ -510,7 +510,7 @@ USDC is ASA `31566704` (testnet `10458941`), settlement goes through the GoPlaus
 facilitator, and a payable endpoint answers a real `402` and carries the Bazaar extension
 so it can be discovered.
 
-Parsec's side is the **buyer**: the wallet an agent or a person pays from. The seller side
+PARSEC's side is the **buyer**: the wallet an agent or a person pays from. The seller side
 lives in mindX.
 
 ## Paying for a BANKON name
@@ -586,7 +586,7 @@ case where the payment settles and the resource then fails. [`evm.test.ts`](../p
 authorization says what the server asked for and that unimplemented transfer methods are
 refused rather than signed. `bankon-names/__tests__/pay.test.ts` pins the four ways a
 receipt can fail to be proof of *this* payment. [`portability.test.ts`](../payer/src/x402/__tests__/portability.test.ts) pays end to end with
-nothing but a bare `algosdk` account and an in-memory store — no Parsec, no Tauri, no
+nothing but a bare `algosdk` account and an in-memory store — no PARSEC, no Tauri, no
 vault, no `localStorage` — and its last case reads the module's own source and fails if
 the core reaches back into the application.
 

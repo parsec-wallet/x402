@@ -1,4 +1,4 @@
-// Parsec x402 — the Algorand rail, scheme `exact`.
+// PARSEC x402 — the Algorand rail, scheme `exact`.
 //
 // The shape the facilitators actually expect (spec `schemes/exact/scheme_exact_algo.md`,
 // reference client `@x402/avm`):
@@ -14,7 +14,7 @@
 // the payer pays its own fee.
 //
 // Signing goes through whatever signer the caller supplied — `algosdk.TransactionSigner`,
-// the shape use-wallet, AlgoKit, Pera, Defly and Lute already speak. Parsec passes one
+// the shape use-wallet, AlgoKit, Pera, Defly and Lute already speak. PARSEC passes one
 // backed by Rust (`chain_algo_sign_transaction`), so the mnemonic never enters the
 // renderer; another wallet passes its own and nothing here changes.
 //
@@ -37,7 +37,7 @@ export interface AvmPaymentPayload extends Record<string, unknown> {
   paymentIndex: number;
 }
 
-/** Parsec's network selector for a CAIP-2 Algorand id. Localnet has no selector; it reads as testnet. */
+/** PARSEC's network selector for a CAIP-2 Algorand id. Localnet has no selector; it reads as testnet. */
 export function walletNetworkFor(network: string): WalletNetwork {
   const d = describeNetwork(network);
   return d.walletNetwork ?? 'testnet';

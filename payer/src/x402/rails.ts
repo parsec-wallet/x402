@@ -1,4 +1,4 @@
-// Parsec x402 — the rail registry.
+// PARSEC x402 — the rail registry.
 //
 // "Self-register, iterate, never branch on chain name" (docs/modules.md) applied to
 // payment. A rail owns one CAIP-2 namespace and knows how to turn a `PaymentRequirements`
@@ -30,7 +30,7 @@ export interface X402PaymentContext {
    * How to sign. A rail reaches for its own family's signer and nothing else.
    *
    * This is the seam that makes the module portable: before it, the Algorand rail
-   * imported Parsec's Rust IPC directly and the payment path could only run inside
+   * imported PARSEC's Rust IPC directly and the payment path could only run inside
    * one application.
    */
   signers: X402Signers;

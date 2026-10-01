@@ -1,4 +1,4 @@
-// Parsec x402 — what a requirement actually costs, exactly.
+// PARSEC x402 — what a requirement actually costs, exactly.
 //
 // A requirement quotes `amount` in atomic units of `asset`. Turning that into something
 // a participant can read must not go near a float: `Number('250000') / 1e6` is fine for

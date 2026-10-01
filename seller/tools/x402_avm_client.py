@@ -7,7 +7,7 @@ signing primitive is an Algorand `AssetTransferTxn` (Ed25519 over USDC ASA)
 instead of EIP-3009 typed-data. Pure Python via `py-algorand-sdk`; no Node
 shell-out, so the BANKON Vault mnemonic stays inside the Python process.
 
-Wire format — x402 v2 GoPlausible "Parsec" exact AVM scheme (atomic group):
+Wire format — x402 v2 GoPlausible "PARSEC" exact AVM scheme (atomic group):
 
     PAYMENT-SIGNATURE: base64(JSON({
         "x402Version": 2,
@@ -217,7 +217,7 @@ class X402AvmClient:
             return None
 
     def _sign_payment(self, accepted: Dict[str, Any]) -> str:
-        """Build + sign the Parsec `exact` AVM payment and return the v2 header value.
+        """Build + sign the PARSEC `exact` AVM payment and return the v2 header value.
 
         Implements the GoPlausible atomic-group scheme (reference §3): when the
         challenge names a fee payer (``extra.feePayer``), the payment is a 2-txn

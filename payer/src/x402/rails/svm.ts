@@ -1,4 +1,4 @@
-// Parsec x402 — the Solana rail, scheme `exact`.
+// PARSEC x402 — the Solana rail, scheme `exact`.
 //
 // Where Algorand builds an atomic group and EVM signs an authorization, Solana signs a
 // transaction that is deliberately incomplete. The payer compiles a transaction whose

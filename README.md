@@ -1,7 +1,7 @@
 # x402 on Algorand — a payer module and a seller middleware
 
 Two halves of the same rail, both Apache-2.0, extracted from
-[Parsec Wallet](https://github.com/parsec-wallet) and mindX.
+[PARSEC Wallet](https://github.com/parsec-wallet) and mindX.
 
 New to the protocol? Start with **[explanation.md](explanation.md)** — what x402 is and
 why it exists. Then [technical.md](technical.md) for the design and
@@ -49,8 +49,8 @@ Defly and Lute need no adapter at all. Adapters exist for the two shapes that ar
 already that: raw ARC-0001 `signTxns`, and EIP-1193 `eth_signTypedData_v4`.
 
 This repository carries the **portable core only** — no host integration layer, and the
-allowlist in its own portability test is empty as a result. Parsec's implementations of
-the ports (Rust-backed signers, its UI registration) live in Parsec, which is where a
+allowlist in its own portability test is empty as a result. PARSEC's implementations of
+the ports (Rust-backed signers, its UI registration) live in PARSEC, which is where a
 host's implementations belong.
 
 | | |

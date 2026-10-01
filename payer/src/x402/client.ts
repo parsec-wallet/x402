@@ -1,4 +1,4 @@
-// Parsec x402 — the payment flow.
+// PARSEC x402 — the payment flow.
 //
 //   request → 402 → read the challenge → pick an offer a registered rail can pay →
 //   quote it exactly → check what would block it → ask the participant → sign →

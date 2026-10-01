@@ -1,4 +1,4 @@
-// Parsec x402 — the wire protocol, version-agnostic.
+// PARSEC x402 — the wire protocol, version-agnostic.
 //
 // x402 has shipped twice. v1 put the challenge in the response *body* and the payment
 // in an `X-PAYMENT` header; v2 (the one the Algorand facilitators speak) moves all three

@@ -1,4 +1,4 @@
-// Parsec x402 — module index.
+// PARSEC x402 — module index.
 //
 // SPDX-FileCopyrightText: 2026 BANKON
 // SPDX-License-Identifier: Apache-2.0

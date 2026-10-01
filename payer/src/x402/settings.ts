@@ -1,4 +1,4 @@
-// Parsec x402 — per-device settings.
+// PARSEC x402 — per-device settings.
 //
 // Which network to prefer when a server offers several, which facilitator to ask about
 // capabilities and discovery, and the ceiling under which a payment may be made without
