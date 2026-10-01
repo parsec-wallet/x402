@@ -9,7 +9,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { hostStorage } from './host';
-import { ALGORAND_MAINNET, ALGORAND_TESTNET, toCaip2, type Caip2 } from './networks';
+import { ALGORAND_MAINNET, toCaip2, type Caip2 } from './networks';
 
 /** GoPlausible runs the facilitator the Algorand x402 ecosystem settles through. */
 export const DEFAULT_FACILITATOR = 'https://facilitator.goplausible.xyz';
@@ -28,7 +28,8 @@ export interface X402Settings {
 const KEY = 'parsec-x402-settings';
 
 export const DEFAULT_X402_SETTINGS: X402Settings = {
-  preferNetwork: ALGORAND_TESTNET,
+  // Algorand mainnet, settling in USDC (ASA 31566704) through the facilitator.
+  preferNetwork: ALGORAND_MAINNET,
   facilitatorUrl: DEFAULT_FACILITATOR,
   autoApproveMicroUsd: 0,
   preflight: true,

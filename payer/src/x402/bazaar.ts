@@ -13,6 +13,7 @@
 // SPDX-FileCopyrightText: 2026 BANKON
 // SPDX-License-Identifier: Apache-2.0
 
+import { formatDecimal } from '../money';
 import { describeAsset, describeNetwork, sameNetwork } from './networks';
 import { normalizeRequirement, type PaymentRequirements } from './protocol';
 import { getX402Settings } from './settings';
@@ -167,12 +168,26 @@ export async function getResource(resourceUrl: string): Promise<BazaarResource |
 }
 
 /** The cheapest payable offer on a resource, as a display string like `0.25 USDC · Algorand Mainnet`. */
-export function describePrice(resource: BazaarResource): string {
+export interface OfferSummary {
+  /** Exact decimal amount, e.g. "0.5". */
+  amount: string;
+  symbol: string;
+  network: string;
+  testnet: boolean;
+}
+
+/** The cheapest offer a registered rail can pay, formatted exactly (money.ts), or null. */
+export function bestOffer(resource: BazaarResource): OfferSummary | null {
   const offers = resource.accepts.filter(canPay);
-  if (!offers.length) return 'no payable offer';
+  if (!offers.length) return null;
   const best = offers.reduce((a, b) => (BigInt(a.amount) <= BigInt(b.amount) ? a : b));
   const asset = describeAsset(best.network, best.asset);
   const decimals = typeof best.extra?.decimals === 'number' ? best.extra.decimals : asset.decimals;
-  const whole = Number(BigInt(best.amount)) / 10 ** decimals;
-  return `${whole.toLocaleString(undefined, { maximumFractionDigits: decimals })} ${asset.symbol} · ${describeNetwork(best.network).label}`;
+  const net = describeNetwork(best.network);
+  return { amount: formatDecimal(BigInt(best.amount), decimals), symbol: asset.symbol, network: net.label, testnet: net.testnet };
+}
+
+export function describePrice(resource: BazaarResource): string {
+  const o = bestOffer(resource);
+  return o ? `${o.amount} ${o.symbol} · ${o.network}` : 'no payable offer';
 }
