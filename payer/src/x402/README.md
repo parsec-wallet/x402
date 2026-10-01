@@ -51,8 +51,9 @@ Arweave is the last registrable rail slot with nothing behind it — a fulfilmen
 
 ```
 pay.ts            createX402Client() — the whole module behind one object
-host.ts           the three ports: signing, storage, nodes
-client.ts         the flow: probe → choose → quote → approve → sign → submit → record
+host.ts           the four ports: signing, storage, nodes, transport
+client.ts         the flow: probe → choose → quote → approve → sign → submit → record;
+                  recheckPayment() re-runs preflight after the wallet clears a blocker
 protocol.ts       the wire, v1 and v2: challenge, payment, settlement envelopes
 networks.ts       CAIP-2 identity, aliases, assets (USDC ASAs), explorers
 rails.ts          the rail registry — one per CAIP-2 namespace
@@ -75,7 +76,7 @@ choices.ts        privilege: sign · reach: external · persistence: device
 surfaces; `bridge.ts` is a legacy vault signer used by the AORC minters, **not** the
 payment path.
 
-## The three ports
+## The four ports
 
 Everything that is not the protocol lives behind [`host.ts`](host.ts), which is why the same code
 runs in another wallet:
@@ -85,6 +86,7 @@ runs in another wallet:
 | **signers** | none — read and quote only | always, to pay |
 | **storage** | `localStorage`, else memory | an agent, SSR, a Tauri store, a test |
 | **nodes** | public algod / EVM RPC | you run your own, or pay for one |
+| **transport** | the platform `fetch` | the webview cannot reach sellers: CORS, or a CSP host list (PARSEC sends x402 requests through Rust: `setX402Transport`) |
 
 `AvmSigner.sign` **is** `algosdk.TransactionSigner`, so use-wallet, AlgoKit Utils, Pera,
 Defly and Lute need no adapter at all.

@@ -237,3 +237,19 @@ export const DEFAULT_EVM_RPC: Record<string, string> = {
   'eip155:84532': 'https://sepolia.base.org',
   'eip155:1': 'https://ethereum-rpc.publicnode.com',
 };
+
+// ── Transport ────────────────────────────────────────────────────
+//
+// How a request reaches the seller. The default is the platform `fetch`; a host
+// whose webview cannot reach arbitrary sellers (CORS, a CSP host list) supplies
+// its own — PARSEC routes through Rust (`adapters/parsec.ts`).
+
+export type X402Transport = (url: string, init?: RequestInit) => Promise<Response>;
+
+let transport: X402Transport = (url, init) => globalThis.fetch(url, init);
+
+/** Replace the transport used for x402 requests. */
+export function setX402Transport(t: X402Transport): void { transport = t; }
+
+/** Send an x402 request through the configured transport. */
+export function x402Transport(url: string, init?: RequestInit): Promise<Response> { return transport(url, init); }
