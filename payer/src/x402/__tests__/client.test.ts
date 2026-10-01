@@ -162,6 +162,20 @@ describe('a paid resource', () => {
     expect(result.txId).toBe(TX);
   });
 
+  it('checks the terms even under a cap: verify runs, and a refusal pays nothing', async () => {
+    globalThis.fetch = server() as unknown as typeof fetch;
+    setX402Settings({ autoApproveMicroUsd: 1000 });
+    const approve = vi.fn(async () => true);
+    const verify = vi.fn(() => { throw new Error('not the payee on the order'); });
+    await expect(
+      x402Request('https://api.example.com/weather', undefined, { payer: PAYER, approve, verify }),
+    ).rejects.toThrow('not the payee on the order');
+    expect(verify).toHaveBeenCalledOnce();
+    expect(approve).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(1); // the probe only: nothing was signed or sent
+    expect(listReceipts()).toHaveLength(0);
+  });
+
   it('still asks when the price is over the cap', async () => {
     globalThis.fetch = server() as unknown as typeof fetch;
     setX402Settings({ autoApproveMicroUsd: 999 });

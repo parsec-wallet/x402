@@ -136,6 +136,13 @@ export interface X402FetchOptions {
   payers?: Partial<Record<RailFamily, string>>;
   /** Called before signing. Omit only for an unattended flow under an auto-approve cap. */
   approve?: ApproveFn;
+  /**
+   * Checks the offer before anything is signed, ALWAYS — also under an auto-approve cap,
+   * which skips `approve`. Throw to refuse. For callers that know exactly what must be
+   * paid (an order's payee, asset and amount): a cap decides whether to ask the person,
+   * never whether to check the terms.
+   */
+  verify?: (pending: PendingX402Payment) => void | Promise<void>;
   /** Override the preferred network for this call. */
   preferNetwork?: string;
   /** Send the payer hint on the initial probe so a server can quote per-payer. Default true. */
@@ -361,6 +368,7 @@ export async function x402Request(
 
   const challenge = await readChallenge(first, url);
   const pending = await preparePayment(url, challenge, options, { ...init, headers });
+  if (options.verify) await options.verify(pending);
 
   const blocked = pending.preflight && !pending.preflight.ok;
   const underCap =
