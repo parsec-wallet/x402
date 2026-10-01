@@ -503,14 +503,12 @@ same CAIP-2 vocabulary, same USDC ASA, same facilitator.
 `agenticplace-client.ts` covers the non-payment surfaces — agent discovery, SmartOracle
 prices, BANKON identity.
 
-## The x402 Global Challenge
+## Mainnet
 
-Submissions ran to 30 September 2026; the leaderboard measures **real mainnet
-settlements**. The parts that matter to this module: mainnet USDC is ASA `31566704`
-(testnet `10458941`), settlement goes through the GoPlausible facilitator, endpoints must
-answer a real `402` and carry the Bazaar extension, and entries are tagged
-`x402-global-challenge` — a tag that shows up in live catalogue entries under
-`extra.tag`.
+What counts is **real mainnet settlement**. The parts that matter to this module: mainnet
+USDC is ASA `31566704` (testnet `10458941`), settlement goes through the GoPlausible
+facilitator, and a payable endpoint answers a real `402` and carries the Bazaar extension
+so it can be discovered.
 
 Parsec's side is the **buyer**: the wallet an agent or a person pays from. The seller side
 lives in mindX.

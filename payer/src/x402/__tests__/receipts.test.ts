@@ -63,6 +63,12 @@ describe('the receipt ledger', () => {
     expect(latestReceiptTo('NOBODY')).toBeNull();
   });
 
+  it('matches a receipt whatever name its settlement gave the network', () => {
+    recordReceipt(receipt({ txId: 'V1NAME', payTo: 'TREASURY', network: 'algorand-mainnet' as unknown as typeof ALGORAND_MAINNET }));
+    // (typed CAIP-2, but a receipt stores the settlement's own name for the network)
+    expect(latestReceiptTo('TREASURY', ALGORAND_MAINNET)?.txId).toBe('V1NAME');
+  });
+
   it('finds every payment for a resource', () => {
     recordReceipt(receipt({ txId: 'A', url: 'https://a/' }));
     recordReceipt(receipt({ txId: 'B', url: 'https://b/' }));

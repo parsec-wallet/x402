@@ -28,7 +28,7 @@ CATALOGUE = {
             "accepts": [{
                 "scheme": "exact", "network": "algorand-mainnet", "amount": "250000",
                 "asset": "31566704", "payTo": "PAYEE",
-                "extra": {"decimals": 6, "feePayer": "SPONSOR", "tag": "x402-global-challenge"},
+                "extra": {"decimals": 6, "feePayer": "SPONSOR", "tag": "example-programme"},
             }],
             "discoveryInfo": {"input": {"type": "http", "method": "GET"}},
             "settleCount": 1091,
@@ -146,7 +146,7 @@ def test_a_price_ceiling_is_applied_locally(bazaar):
 
 
 def test_a_tag_filter_narrows_to_one_programme(bazaar):
-    urls = [r.url for r in bazaar.list(tag="x402-global-challenge")]
+    urls = [r.url for r in bazaar.list(tag="example-programme")]
     assert urls == ["https://api.example.com/weather"]
 
 

@@ -114,6 +114,6 @@ Beside this file:
 Elsewhere:
 
 - [`docs/x402-integration.md`](../../../docs/x402-integration.md) — the protocol, both
-  schemes in detail, integrating another wallet, the Global Challenge
+  schemes in detail, integrating another wallet, mainnet
 - [`docs/x402-api.md`](../../../docs/x402-api.md) — every export, every error
 - Spec: [algorandfoundation/x402](https://github.com/algorandfoundation/x402)

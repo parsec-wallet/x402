@@ -127,10 +127,10 @@ not yet moved real USDC on mainnet.** [`payer/src/x402/todo.md`](payer/src/x402/
 carries the goal, the plan, and what is honestly still open — including that, and the
 Solana rail, which is an empty slot rather than a quiet omission.
 
-## Running this as a challenge entry
+## Running it on mainnet
 
-[HANDOFF.md](HANDOFF.md) is the operator's page: what is done, the two things that are
-not, and the exact commands for each.
+[HANDOFF.md](HANDOFF.md) is the operator's page: what is live, what is not yet, and the
+exact commands for each — including moving the `payTo` without a restart.
 
 ## Documentation
 

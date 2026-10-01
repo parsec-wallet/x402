@@ -101,7 +101,7 @@ Price it in `data/config/x402_pricing.json`:
       "discovery": { "method": "POST", "body": {"city": "SF"}, "output": {"weather": "foggy"} }
     }
   },
-  "discovery": { "base_url": "https://api.example.com", "tag": "x402-global-challenge" },
+  "discovery": { "base_url": "https://api.example.com", "tag": "my-catalogue-tag" },
   "rails": {
     "algorand-mainnet": {
       "scheme": "exact",

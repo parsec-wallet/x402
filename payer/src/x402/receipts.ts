@@ -16,7 +16,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { hostStorage } from './host';
-import { explorerTxUrl, type Caip2 } from './networks';
+import { explorerTxUrl, sameNetwork, type Caip2 } from './networks';
 
 export interface X402Receipt {
   /** Settled transaction id. On Algorand, of `paymentGroup[paymentIndex]`. */
@@ -86,10 +86,14 @@ export function receiptsFor(url: string): X402Receipt[] {
  *
  * This is the lookup a name claim makes: BNR's `Payment-Proof` wants the transaction id
  * of a payment to the registry treasury, and this is where one comes from.
+ *
+ * Networks are compared as networks, not strings: a receipt keeps whatever name the
+ * server's settlement used (`algorand-mainnet`, a short CAIP-2, the full genesis hash),
+ * and every one of those is the same chain.
  */
 export function latestReceiptTo(payTo: string, network?: string): X402Receipt | null {
   return (
-    listReceipts().find((r) => r.payTo === payTo && (!network || r.network === network)) ?? null
+    listReceipts().find((r) => r.payTo === payTo && (!network || sameNetwork(r.network, network))) ?? null
   );
 }
 

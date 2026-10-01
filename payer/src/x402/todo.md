@@ -34,8 +34,8 @@ and `/discovery`. Nothing in this module has yet moved real USDC.
 Needs: the payer account opted in to ASA `31566704`, funded, and one real payment through
 a mainnet resource. Until that happens the module is *believed* to work end to end.
 
-This is also what the [x402 Global Challenge](../../../docs/x402-integration.md#the-x402-global-challenge)
-scores — real mainnet settlements, not code.
+Real mainnet settlement is the measure of this module, not code — see
+[Mainnet](../../../docs/x402-integration.md#mainnet).
 
 ---
 

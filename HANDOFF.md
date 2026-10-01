@@ -1,192 +1,93 @@
-# x402 — handoff
+# x402 — operator status
 
-**For the wallet owner. Everything below is blocked on something only you hold.**
-
-Written 2026-09-21, updated 2026-09-22. The x402 Global Challenge closes
-**30 September** — eight days.
-
-**Do the opt-in first.** It is two minutes and it is the critical path: the deployment
-can follow at any time, but until the `payTo` is opted in, nothing that either of you
-builds can settle. One signature unblocks the rest.
-
----
+Updated 2026-09-30. What is live, what is not yet, and who has to do the rest.
 
 ## Where things stand
 
 | | |
 |---|---|
-| Payer module, three rails (Algorand, EVM, Solana) | **done**, 155 tests |
-| Public repository (challenge eligibility) | **done** — [parsec-wallet/x402](https://github.com/parsec-wallet/x402) |
-| Seller middleware answers 402, not 401 | **done in the repo**, *not deployed* |
-| Three name products priced with Bazaar declarations | **done in the repo**, *not deployed* |
-| `payTo` opted in to USDC | **blocked — needs your key** |
-| One real mainnet settlement | blocked by the two above |
-| Submission form + Electric Capital | not done |
+| Payer module, three rails (Algorand, EVM, Solana) | **done** — `payer/src/x402/` |
+| Seller middleware (402 challenge, verify, settle, Bazaar) | **done** — `seller/mindx_backend_service/` |
+| `https://mindx.pythai.net/names/*` answers a correct 402 | **live** since 2026-09-30 |
+| Parsec registers a `.algo` name by paying the service fee over x402 | **done** in Parsec (`.algo Names`) |
+| The receiving `payTo` opted in to USDC (ASA `31566704`) | **in progress** — moving to a new account |
+| One real mainnet settlement | follows the opt-in |
 
-Two things stand between this and a ranked entry, and neither is code.
-
-### Verified state, 2026-09-22
-
-Every number below was produced by running the command, not by counting files.
-
-| repo | commit | |
-|---|---|---|
-| `parsec-wallet` (private) | `cc6b308` | 558 tests pass, 58 `tsc` errors — all pre-existing, none in x402 |
-| `mindX` (private) | `bea08935e` | 61 x402 tests pass |
-| [`parsec-wallet/x402`](https://github.com/parsec-wallet/x402) (**public**) | `eeed077` | 0 type errors, 131 tests |
-
-The three pre-existing test failures are in `prices-derived`, unrelated to x402 and
-present before this work began. The 58 type errors are all in untracked views reaching
-for library work that has not landed; the tree does not `vite build` for that reason,
-which predates x402 and is recorded in the Parsec repository's own TODO index.
-
-Live checks, same date:
+### Live, 2026-09-30
 
 ```
-treasury L24WEG…   11.53 ALGO, 0 assets opted in, USDC opted in: false
-POST /coordinator/query   → 401   (must be 402)
-POST /names/algo          → 401
-parsec-wallet/x402        → public
+POST https://mindx.pythai.net/names/algo    → 402, PAYMENT-REQUIRED header
+  resource   https://mindx.pythai.net/names/algo   (absolute)
+  rails      Algorand mainnet  USDC 31566704  0.50   feePayer from GoPlausible
+             Algorand testnet  USDC 10458941  0.50
+             Base              USDC            0.50
+  extensions bazaar
+GET  https://mindx.pythai.net/names/reservations/{tx}   → free lookup
 ```
 
----
+The three things that had to change on the live app, now deployed:
 
-## 1. Opt the treasury in to USDC — 2 minutes
+1. **The error handler passes a 402 through intact.** It used to rebuild every error as
+   `{"detail": …}` and drop the response headers, so a challenge reached the payer with
+   no `PAYMENT-REQUIRED` header and its body nested one level down — nothing to pay.
+   Browsers were given an HTML error page instead of the challenge.
+2. **The access gate lets priced routes through to the paywall.** A route behind the
+   login gate answers 401, which an autonomous caller cannot act on; the paywall's 402
+   says *the price, the asset, the address, the network*, which it can.
+3. **The name routes exist on the app that is actually deployed.**
 
-**Why it is not optional.** An `axfer` to an account that has never opted in is rejected
-by the Algorand protocol. Until this is done, **no x402 payment can ever settle to that
-address**, and the failure does not read as a configuration problem. The challenge also
-requires it explicitly.
+## Changing the `payTo`
 
-The account is funded — 11.53 ALGO — so this is a signature, not a purchase.
+The pricing file reloads when its modification time moves — no restart. To move the
+receiving address:
 
-```
-account   L24WEG3KK6QDSQGQGXCJIYR46HHDFK5IJ7HOZF3YDDTHTREGYPDWY74KG4
-asset     31566704  (USDC, mainnet)
-costs     0.001 ALGO fee, and locks 0.1 ALGO into the minimum balance
-```
+1. Opt the new address in to USDC `31566704` (an `axfer` to an account that has not
+   opted in is rejected by the protocol, so nothing can settle until this is done):
 
-### Run it
+   ```bash
+   X402_PAYTO=<address> python3 seller/usdc_optin.py
+   ```
 
-```bash
-pip install py-algorand-sdk                  # if needed
-python3 seller/usdc_optin.py                 # prompts for the phrase, hidden
-```
+   The script derives the address from the phrase you type and refuses to sign unless it
+   matches. The phrase is never an argument and never leaves the machine.
 
-The script **derives the address first and refuses to sign unless it matches** that payTo,
-so a wrong phrase costs nothing — that refusal path is the one I tested before anything
-else, with a throwaway phrase, and it printed what it derived and sent nothing. It prints what it will do and waits for you to type
-`optin`. The key is never an argument — arguments land in shell history and process
-listings — and never leaves your machine.
+2. Set it on both Algorand rails in `data/config/x402_pricing.json`, replace the file on
+   the host, and `touch` it — a copy that preserves an older timestamp is not reloaded.
 
-Verify afterwards:
+3. Check the live challenge names the new address:
 
-```bash
-curl -s "https://mainnet-idx.algonode.cloud/v2/accounts/L24WEG3KK6QDSQGQGXCJIYR46HHDFK5IJ7HOZF3YDDTHTREGYPDWY74KG4/assets?asset-id=31566704"
-# "assets":[{…}]  — not the "assets":[] it returns today
-```
+   ```bash
+   curl -si -X POST https://mindx.pythai.net/names/algo \
+     -H 'content-type: application/json' -d '{"name":"x.algo"}' | grep -i payment-required
+   ```
 
-### If you do not hold that key
+Keep one `payTo` per domain, and keep it once payments have settled to it: the
+facilitator's catalogue keys a merchant by that address.
 
-Then pick an address you do hold, opt *it* in, and change one line:
+## Then: one real payment
 
-```jsonc
-// data/config/x402_pricing.json → rails → algorand-mainnet
-"payTo": "<your 58-char address, opted in to USDC>"
-```
-
-Nothing else changes. `X402_PAYTO=<address> python3 scripts/usdc_optin.py` will opt in
-whichever address you name.
-
-**What I found while looking:** `~/.bankon/vault` is empty, no local env file holds a
-phrase deriving to that address, and mindX's own identity snapshot already records
-`"not_verified": ["possession of the private key…"]` for it. So I could not do this, and
-nobody should assume the key is on this machine.
-
----
-
-## 2. Deploy the 402 change — the endpoint still answers 401
-
-```bash
-curl -s -o /dev/null -w '%{http_code}\n' -X POST \
-  -H 'content-type: application/json' -d '{}' \
-  https://mindx.pythai.net/coordinator/query
-# 401 today. Must be 402.
-```
-
-The deployed host runs `main_service_production.py`, which gated on
-`require_valid_session` and never imported the paywall. That is fixed in the repository
-(`priced()` — a session opens the route, or a payment does) but **the VPS has not taken
-the change**. Pull and restart on the host.
-
-The challenge requires 402 when called without payment, and it is right to: 401 says
-*authenticate and come back*, which an autonomous caller cannot act on — there is nobody
-to log in. 402 says *here is the price, the asset, the address and the network*.
-
-Once deployed, these should all answer 402:
-
-```
-POST /coordinator/query        $0.002
-POST /names/arns/undername     $5.00   a permanent undername under a BANKON base name
-POST /names/algo               $0.50   a .algo NFD registered to your Algorand address
-POST /names/algo/segment       $0.25   a subdomain under mindx.algo
-```
-
-Each carries mainnet USDC (ASA 31566704), the GoPlausible fee payer, the
-`x402-global-challenge` tag and a `bazaar` declaration — verified by building the
-envelope from the config, not by reading the code.
-
----
-
-## 3. Then: one real payment, and submit
-
-With 1 and 2 done, the loop closes:
-
-1. Pay one of your own endpoints from Parsec (or any wallet) on **mainnet**
-2. That settlement puts you in the facilitator's Bazaar catalogue automatically
-3. Submit the form, and the repository to Electric Capital, before 30 September
-
-Use `parsec-wallet/x402` as the submitted repository — it is public, Apache-2.0, and
-contains both halves with no history from any private tree.
-
----
-
-## What kind of entry this is
-
-The leaderboard measures **USDC settled *to* your endpoint**. A wallet that pays scores
-nothing on a Standard or Composite entry, however good it is.
-
-**Orchestrator** is the category that counts a payer: *client-facing endpoint payments
-plus downstream payments both attributed to the leaderboard total*. It requires you to
-expose your own paid endpoint and settle the client's payment before paying downstream —
-which is exactly the shape already built. mindX sells; the Parsec module buys.
-
-For context on the field: 2,150 resources catalogued, top settlement counts 5073 / 2120 /
-452, **median 14**, and no entry in the sample with zero. One settlement gets you ranked.
-Winning on volume means outrunning teams live for weeks — but the ten Devcon finalists are
-chosen from submissions, which is where a differentiated build competes.
-
----
+Pay one endpoint on **mainnet** from Parsec (`.algo Names` → Review & register → Pay &
+register, or the x402 desk) or any wallet. The paid response carries the settlement
+transaction id; the USDC lands in the `payTo`; the facilitator lists the endpoint in its
+catalogue after the first settlement.
 
 ## Where everything is
 
 | | |
 |---|---|
-| Public repo (submit this) | https://github.com/parsec-wallet/x402 |
 | Payer module | `payer/src/x402/` (mirrored from Parsec) |
 | Seller middleware | `seller/mindx_backend_service/` |
 | Prices and rails | mindX `data/config/x402_pricing.json` |
-| Opt-in tool | [`seller/usdc_optin.py`](seller/usdc_optin.py) (also `mindX/scripts/usdc_optin.py`) |
+| Opt-in tool | [`seller/usdc_optin.py`](seller/usdc_optin.py) |
 | Protocol, all three schemes, embedding | [`docs/x402-integration.md`](docs/x402-integration.md) |
 | Every export, every error | [`docs/x402-api.md`](docs/x402-api.md) |
 | Goal, plan, what is open | [`payer/src/x402/todo.md`](payer/src/x402/todo.md) |
 
 ## Known debts, stated rather than buried
 
-- **Nothing here has moved real value on any mainnet.** Everything is verified against
-  stubs, testnet shapes, live *read* endpoints, and — for the Solana associated-token
-  derivation — two addresses read back from mainnet. That is not the same as having
-  settled.
+- **Nothing here has moved real value on any mainnet yet.** Everything is verified
+  against stubs, testnet shapes and live *read* endpoints. That is not the same as having
+  settled; the first mainnet settlement is the next step.
 - The `arweave` rail slot is empty and may stay so: it is a fulfilment leg with no
   settlement chain.
 - Credential hygiene findings in the private trees are recorded in mindX's own copy of

@@ -164,7 +164,7 @@ export const ASSETS: AssetDescriptor[] = [
   { id: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', network: BASE_SEPOLIA, symbol: 'USDC', decimals: 6 },
 ];
 
-/** USDC ASA ids, named because the x402 Global Challenge settles in them. */
+/** USDC ASA ids, named because mainnet x402 settles in them. */
 export const USDC_ASA_MAINNET = 31566704;
 export const USDC_ASA_TESTNET = 10458941;
 
